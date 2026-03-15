@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-packed: #3b82f6;
+  --color-loaded: #f97316;
+  --color-in-storage: #8b5cf6;
+  --color-delivered: #f59e0b;
+  --color-unpacked: #22c55e;
+  --color-fragile: #ef4444;
+  --color-priority: #eab308;
+}
+
+@layer base {
+  body {
+    @apply antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
