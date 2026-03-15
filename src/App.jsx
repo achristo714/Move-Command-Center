@@ -12,6 +12,7 @@ import UnpackingQueue from './pages/UnpackingQueue'
 import PrintLabels from './pages/PrintLabels'
 import MoverInstructions from './pages/MoverInstructions'
 import Settings from './pages/Settings'
+import PhotoFeed from './pages/PhotoFeed'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/essentials" element={<Essentials />} />
           <Route path="/unpack" element={<UnpackingQueue />} />
+          <Route path="/photos" element={<PhotoFeed />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
         {/* Print pages - no layout */}

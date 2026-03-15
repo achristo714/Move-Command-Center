@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Package, MapPin, Search, Plus, Settings, Moon, Sun } from 'lucide-react'
+import { LayoutDashboard, Package, MapPin, Search, Image, Plus, Settings, Moon, Sun } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../hooks/useTheme'
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/boxes', icon: Package, label: 'Boxes' },
   { to: '/rooms', icon: MapPin, label: 'Rooms' },
+  { to: '/photos', icon: Image, label: 'Photos' },
   { to: '/search', icon: Search, label: 'Search' },
 ]
 
