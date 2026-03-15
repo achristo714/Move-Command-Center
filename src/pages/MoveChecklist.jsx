@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Check, Trash2, ClipboardList } from 'lucide-react'
+import { ArrowLeft, Plus, Check, Trash2, ClipboardList, Pencil } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '../hooks/useStore'
 import store from '../lib/store'
@@ -88,6 +88,8 @@ export default function MoveChecklist() {
   const [newCategory, setNewCategory] = useState('before_move')
   const [filterCategory, setFilterCategory] = useState('all')
   const [showDone, setShowDone] = useState(true)
+  const [editingId, setEditingId] = useState(null)
+  const [editText, setEditText] = useState('')
 
   // Seed defaults on first visit
   useEffect(() => {
@@ -277,13 +279,35 @@ export default function MoveChecklist() {
                     {item.is_done && <Check className="w-3 h-3 text-white" />}
                   </button>
 
-                  <span className={`flex-1 text-sm ${
-                    item.is_done
-                      ? 'text-slate-400 line-through'
-                      : 'text-slate-700 dark:text-slate-200'
-                  }`}>
-                    {item.text}
-                  </span>
+                  {editingId === item.id ? (
+                    <input
+                      autoFocus
+                      value={editText}
+                      onChange={e => setEditText(e.target.value)}
+                      onBlur={() => {
+                        if (editText.trim() && editText.trim() !== item.text) {
+                          store.updateChecklistItem(item.id, { text: editText.trim() })
+                        }
+                        setEditingId(null)
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') e.target.blur()
+                        if (e.key === 'Escape') setEditingId(null)
+                      }}
+                      className="flex-1 text-sm border border-blue-300 dark:border-blue-500 rounded px-2 py-0.5 bg-white dark:bg-slate-800 dark:text-white outline-none"
+                    />
+                  ) : (
+                    <span
+                      onClick={() => { setEditingId(item.id); setEditText(item.text) }}
+                      className={`flex-1 text-sm cursor-pointer ${
+                        item.is_done
+                          ? 'text-slate-400 line-through'
+                          : 'text-slate-700 dark:text-slate-200'
+                      }`}
+                    >
+                      {item.text}
+                    </span>
+                  )}
 
                   <button
                     onClick={() => store.removeChecklistItem(item.id)}
