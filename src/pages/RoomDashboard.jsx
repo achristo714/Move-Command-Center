@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Package, AlertTriangle, Star, CheckCircle2, ClipboardList } from 'lucide-react'
+import { MapPin, AlertTriangle, Star, CheckCircle2, ClipboardList } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useRooms } from '../hooks/useStore'
 import { getStatusColor } from '../lib/constants'
@@ -11,9 +11,8 @@ export default function RoomDashboard() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-slate-800">Rooms</h1>
-
-      <div className="space-y-3">
+      <h1 className="text-xl font-bold text-slate-800 dark:text-white">Rooms</h1>
+      <div className="grid sm:grid-cols-2 gap-3">
         {rooms.map((room, i) => {
           const boxes = store.getBoxes().filter(b => b.destination_room_id === room.id)
           const byStatus = {}
@@ -32,41 +31,28 @@ export default function RoomDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => navigate(`/rooms/${room.id}`)}
-              className={`w-full bg-white rounded-xl border p-4 text-left active:scale-[0.98] transition-transform ${
-                allUnpacked ? 'border-green-300 bg-green-50/50' : 'border-slate-200'
-              }`}
+              className={`w-full bg-white dark:bg-slate-800/50 rounded-xl border p-4 text-left active:scale-[0.98] transition-transform ${allUnpacked ? 'border-green-300 dark:border-green-500/30 bg-green-50/50 dark:bg-green-500/5' : 'border-slate-200 dark:border-slate-700/50'}`}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-blue-500" />
-                  <span className="font-semibold text-slate-800">{room.name}</span>
+                  <span className="font-semibold text-slate-800 dark:text-white">{room.name}</span>
                   {allUnpacked && <CheckCircle2 className="w-4 h-4 text-green-500" />}
                 </div>
                 <span className="text-sm text-slate-400">
                   {boxes.length} box{boxes.length !== 1 ? 'es' : ''}
-                  {estimate > 0 && <span className="text-slate-300"> / ~{estimate} est.</span>}
+                  {estimate > 0 && <span className="text-slate-300 dark:text-slate-500"> / ~{estimate} est.</span>}
                 </span>
               </div>
-
-              {/* Status mini-bar */}
               {boxes.length > 0 && (
                 <div className="flex h-2 rounded-full overflow-hidden mb-2">
                   {['packed', 'loaded', 'in_storage', 'delivered', 'unpacked'].map(s => {
                     const count = byStatus[s] || 0
                     if (count === 0) return null
-                    return (
-                      <div
-                        key={s}
-                        style={{
-                          width: `${(count / boxes.length) * 100}%`,
-                          backgroundColor: getStatusColor(s),
-                        }}
-                      />
-                    )
+                    return <div key={s} style={{ width: `${(count / boxes.length) * 100}%`, backgroundColor: getStatusColor(s) }} />
                   })}
                 </div>
               )}
-
               <div className="flex items-center gap-3 text-xs text-slate-400">
                 {Object.entries(byStatus).map(([status, count]) => (
                   <span key={status} className="flex items-center gap-1">
@@ -75,24 +61,11 @@ export default function RoomDashboard() {
                   </span>
                 ))}
               </div>
-
               {(fragile > 0 || priority > 0 || pendingTasks > 0) && (
                 <div className="flex items-center gap-3 mt-2 text-xs">
-                  {fragile > 0 && (
-                    <span className="flex items-center gap-1 text-red-500">
-                      <AlertTriangle className="w-3 h-3" /> {fragile} fragile
-                    </span>
-                  )}
-                  {priority > 0 && (
-                    <span className="flex items-center gap-1 text-yellow-500">
-                      <Star className="w-3 h-3 fill-current" /> {priority} priority
-                    </span>
-                  )}
-                  {pendingTasks > 0 && (
-                    <span className="flex items-center gap-1 text-blue-500">
-                      <ClipboardList className="w-3 h-3" /> {pendingTasks} tasks
-                    </span>
-                  )}
+                  {fragile > 0 && <span className="flex items-center gap-1 text-red-500"><AlertTriangle className="w-3 h-3" /> {fragile} fragile</span>}
+                  {priority > 0 && <span className="flex items-center gap-1 text-yellow-500"><Star className="w-3 h-3 fill-current" /> {priority} priority</span>}
+                  {pendingTasks > 0 && <span className="flex items-center gap-1 text-blue-500"><ClipboardList className="w-3 h-3" /> {pendingTasks} tasks</span>}
                 </div>
               )}
             </motion.button>

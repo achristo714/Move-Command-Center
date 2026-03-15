@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-packed: #3b82f6;
   --color-loaded: #f97316;
@@ -20,6 +22,32 @@
 @layer utilities {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .dot-grid {
+    background-image: radial-gradient(circle, rgba(148, 163, 184, 0.15) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .dark .dot-grid, .dot-grid-dark {
+    background-image: radial-gradient(circle, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .geo-border {
+    border: 1px dashed rgba(148, 163, 184, 0.3);
+  }
+
+  .dark .geo-border {
+    border-color: rgba(148, 163, 184, 0.15);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  }
+
+  .dark .glow-blue {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
   }
 }
 

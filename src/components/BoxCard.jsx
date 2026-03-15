@@ -28,8 +28,8 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className={`bg-white rounded-xl border transition-all active:scale-[0.98] ${
-        box.is_priority ? 'border-yellow-400 ring-1 ring-yellow-200' : 'border-slate-200'
+      className={`bg-white dark:bg-slate-800/50 rounded-xl border transition-all active:scale-[0.98] ${
+        box.is_priority ? 'border-yellow-400 dark:border-yellow-500/40 ring-1 ring-yellow-200 dark:ring-yellow-500/20' : 'border-slate-200 dark:border-slate-700/50'
       } ${selected ? 'ring-2 ring-blue-500' : ''}`}
       onClick={() => navigate(`/boxes/${box.id}`)}
     >
@@ -38,22 +38,22 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
           <button
             onClick={handleSelect}
             className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-              selected ? 'bg-blue-500 border-blue-500' : 'border-slate-300'
+              selected ? 'bg-blue-500 border-blue-500' : 'border-slate-300 dark:border-slate-600'
             }`}
           >
             {selected && <span className="text-white text-xs">✓</span>}
           </button>
         )}
 
-        <div className="flex-shrink-0 w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+        <div className="flex-shrink-0 w-10 h-10 bg-slate-100 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
           <Package className="w-5 h-5 text-slate-400" />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-800">#{box.box_number}</span>
+            <span className="font-semibold text-slate-800 dark:text-white">#{box.box_number}</span>
             {box.label && (
-              <span className="text-sm text-slate-500 truncate">{box.label}</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400 truncate">{box.label}</span>
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
@@ -79,13 +79,13 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
           {showAdvance && nextStatuses.length > 0 ? (
             <button
               onClick={handleAdvance}
-              className="ml-1 p-1.5 rounded-full bg-slate-100 active:bg-slate-200 transition-colors"
+              className="ml-1 p-1.5 rounded-full bg-slate-100 dark:bg-slate-700/50 active:bg-slate-200 dark:active:bg-slate-600 transition-colors"
               title={`Mark as ${getStatusLabel(nextStatuses[0])}`}
             >
-              <ArrowRight className="w-4 h-4 text-slate-500" />
+              <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             </button>
           ) : (
-            <ChevronRight className="w-4 h-4 text-slate-300 ml-1" />
+            <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 ml-1" />
           )}
         </div>
       </div>

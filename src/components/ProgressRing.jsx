@@ -14,7 +14,8 @@ export default function ProgressRing({ value, total, size = 120, strokeWidth = 1
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#e2e8f0"
+          stroke="currentColor"
+          className="text-slate-200 dark:text-slate-700"
           strokeWidth={strokeWidth}
         />
         <motion.circle
@@ -34,7 +35,7 @@ export default function ProgressRing({ value, total, size = 120, strokeWidth = 1
       <div className="absolute inset-0 flex items-center justify-center">
         {children || (
           <div className="text-center">
-            <div className="text-2xl font-bold text-slate-800">{Math.round(progress * 100)}%</div>
+            <div className="text-2xl font-bold text-slate-800 dark:text-white">{Math.round(progress * 100)}%</div>
           </div>
         )}
       </div>
