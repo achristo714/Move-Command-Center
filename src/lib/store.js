@@ -294,7 +294,8 @@ export const store = {
     if (!query) return this.getBoxes()
     const q = query.toLowerCase()
     return state.boxes.filter(b => {
-      const searchable = [b.ai_summary, b.manual_contents, b.label, b.handling_notes, `box ${b.box_number}`, `#${b.box_number}`]
+      const room = state.rooms.find(r => r.id === b.destination_room_id)
+      const searchable = [b.ai_summary, b.manual_contents, b.label, b.handling_notes, `box ${b.box_number}`, `#${b.box_number}`, room?.name]
         .join(' ').toLowerCase()
       return searchable.includes(q)
     })
