@@ -26,6 +26,7 @@ const emptyState = {
   room_estimates: {},
   room_tasks: [],
   activity_log: [],
+  landlord_questions: [],
   next_box_number: 1,
   initialized: false,
 }
@@ -383,6 +384,45 @@ export const store = {
     state = { ...state, room_tasks: state.room_tasks.filter(t => t.id !== id) }
     notify()
     sb(() => supabase.from('room_tasks').delete().eq('id', id))
+  },
+
+  // Landlord questions
+  getLandlordQuestions() {
+    return [...(state.landlord_questions || [])].sort((a, b) => a.sort_order - b.sort_order)
+  },
+
+  addLandlordQuestion(text, category = 'general') {
+    const item = { id: createId(), text, category, is_answered: false, answer: '', sort_order: (state.landlord_questions || []).length, created_at: now() }
+    state = { ...state, landlord_questions: [...(state.landlord_questions || []), item] }
+    notify()
+    return item
+  },
+
+  updateLandlordQuestion(id, updates) {
+    state = {
+      ...state,
+      landlord_questions: (state.landlord_questions || []).map(q =>
+        q.id === id ? { ...q, ...updates } : q
+      ),
+    }
+    notify()
+  },
+
+  toggleLandlordQuestion(id) {
+    const item = (state.landlord_questions || []).find(q => q.id === id)
+    if (!item) return
+    state = {
+      ...state,
+      landlord_questions: state.landlord_questions.map(q =>
+        q.id === id ? { ...q, is_answered: !q.is_answered } : q
+      ),
+    }
+    notify()
+  },
+
+  removeLandlordQuestion(id) {
+    state = { ...state, landlord_questions: (state.landlord_questions || []).filter(q => q.id !== id) }
+    notify()
   },
 
   // Activity log

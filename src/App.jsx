@@ -13,6 +13,7 @@ import PrintLabels from './pages/PrintLabels'
 import MoverInstructions from './pages/MoverInstructions'
 import Settings from './pages/Settings'
 import PhotoFeed from './pages/PhotoFeed'
+import LandlordQuestions from './pages/LandlordQuestions'
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/essentials" element={<Essentials />} />
           <Route path="/unpack" element={<UnpackingQueue />} />
           <Route path="/photos" element={<PhotoFeed />} />
+          <Route path="/landlord" element={<LandlordQuestions />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
         {/* Print pages - no layout */}
