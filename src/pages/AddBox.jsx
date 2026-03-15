@@ -4,6 +4,7 @@ import { Camera, Upload, X, AlertTriangle, Star, ArrowLeft, Loader2, Pen } from 
 import { motion } from 'framer-motion'
 import { useRooms } from '../hooks/useStore'
 import store from '../lib/store'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { BOX_SIZES, generateBoxCode } from '../lib/boxSizes'
 
 export default function AddBox() {
@@ -28,18 +29,40 @@ export default function AddBox() {
   const selectedRoom = rooms.find(r => r.id === roomId)
   const sharpieCode = generateBoxCode(nextNumber, selectedRoom?.name)
 
+  const analyzePhoto = async (file) => {
+    setAnalyzing(true)
+    try {
+      const reader = new FileReader()
+      const base64 = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result.split(',')[1])
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+
+      const { data, error } = await supabase.functions.invoke('identify-box', {
+        body: { image_base64: base64, mime_type: file.type || 'image/jpeg' },
+      })
+
+      if (error) throw error
+      if (data?.summary) setAiSummary(data.summary)
+    } catch (err) {
+      console.error('AI analysis failed:', err)
+      setAiSummary('Photo captured — could not analyze. You can describe contents manually below.')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
+
   const handleFiles = (files) => {
     const newPhotos = Array.from(files).map(file => ({
       file,
       preview: URL.createObjectURL(file),
     }))
     setPhotos(prev => [...prev, ...newPhotos])
-    if (!aiSummary) {
-      setAnalyzing(true)
-      setTimeout(() => {
-        setAiSummary('Photo captured — AI summary will be generated when Anthropic API is configured.')
-        setAnalyzing(false)
-      }, 1500)
+    if (!aiSummary && files.length > 0 && isSupabaseConfigured()) {
+      analyzePhoto(files[0])
+    } else if (!aiSummary && !isSupabaseConfigured()) {
+      setAiSummary('Photo captured — connect Supabase to enable AI identification.')
     }
   }
 

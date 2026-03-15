@@ -28,6 +28,7 @@ const emptyState = {
   activity_log: [],
   landlord_questions: [],
   move_checklist: [],
+  furniture: [],
   next_box_number: 1,
   initialized: false,
 }
@@ -460,6 +461,33 @@ export const store = {
 
   removeChecklistItem(id) {
     state = { ...state, move_checklist: (state.move_checklist || []).filter(item => item.id !== id) }
+    notify()
+  },
+
+  // Furniture
+  getFurniture() {
+    return [...(state.furniture || [])].sort((a, b) => a.created_at < b.created_at ? -1 : 1)
+  },
+
+  addFurniture(name, room_id, size = 'medium', needs_disassembly = false, notes = '') {
+    const item = { id: createId(), name, room_id, size, needs_disassembly, notes, created_at: now() }
+    state = { ...state, furniture: [...(state.furniture || []), item] }
+    notify()
+    return item
+  },
+
+  updateFurniture(id, updates) {
+    state = {
+      ...state,
+      furniture: (state.furniture || []).map(f =>
+        f.id === id ? { ...f, ...updates } : f
+      ),
+    }
+    notify()
+  },
+
+  removeFurniture(id) {
+    state = { ...state, furniture: (state.furniture || []).filter(f => f.id !== id) }
     notify()
   },
 

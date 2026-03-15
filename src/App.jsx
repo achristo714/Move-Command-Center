@@ -15,6 +15,7 @@ import Settings from './pages/Settings'
 import PhotoFeed from './pages/PhotoFeed'
 import LandlordQuestions from './pages/LandlordQuestions'
 import MoveChecklist from './pages/MoveChecklist'
+import MovingEstimate from './pages/MovingEstimate'
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/photos" element={<PhotoFeed />} />
           <Route path="/landlord" element={<LandlordQuestions />} />
           <Route path="/checklist" element={<MoveChecklist />} />
+          <Route path="/estimate" element={<MovingEstimate />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
         {/* Print pages - no layout */}
