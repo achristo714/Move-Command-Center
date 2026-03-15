@@ -1,11 +1,12 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Camera, Upload, X, AlertTriangle, Star, ArrowLeft, Loader2, Pen } from 'lucide-react'
+import { Camera, Upload, X, AlertTriangle, Star, ArrowLeft, Loader2, Pen, Sparkles, Tag } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useRooms } from '../hooks/useStore'
 import store from '../lib/store'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { BOX_SIZES, generateBoxCode } from '../lib/boxSizes'
+import { ai } from '../lib/ai'
 
 export default function AddBox() {
   const navigate = useNavigate()
@@ -29,6 +30,8 @@ export default function AddBox() {
   const selectedRoom = rooms.find(r => r.id === roomId)
   const sharpieCode = generateBoxCode(nextNumber, selectedRoom?.name)
 
+  const [suggestingLabel, setSuggestingLabel] = useState(false)
+
   const analyzePhoto = async (file) => {
     setAnalyzing(true)
     try {
@@ -39,15 +42,24 @@ export default function AddBox() {
         reader.readAsDataURL(file)
       })
 
-      const { data, error } = await supabase.functions.invoke('identify-box', {
-        body: { image_base64: base64, mime_type: file.type || 'image/jpeg' },
-      })
+      // Try the direct API server first, fall back to Supabase Edge Function
+      try {
+        const description = await ai.describeBox(base64, file.type || 'image/jpeg')
+        if (description) { setAiSummary(description); return }
+      } catch {}
 
-      if (error) throw error
-      if (data?.summary) setAiSummary(data.summary)
+      if (isSupabaseConfigured() && supabase) {
+        const { data, error } = await supabase.functions.invoke('identify-box', {
+          body: { image_base64: base64, mime_type: file.type || 'image/jpeg' },
+        })
+        if (error) throw error
+        if (data?.summary) setAiSummary(data.summary)
+      } else {
+        setAiSummary('Photo captured — set up AI server to enable auto-identification.')
+      }
     } catch (err) {
       console.error('AI analysis failed:', err)
-      setAiSummary('Photo captured — could not analyze. You can describe contents manually below.')
+      setAiSummary('Photo captured — describe contents manually below.')
     } finally {
       setAnalyzing(false)
     }
@@ -59,10 +71,22 @@ export default function AddBox() {
       preview: URL.createObjectURL(file),
     }))
     setPhotos(prev => [...prev, ...newPhotos])
-    if (!aiSummary && files.length > 0 && isSupabaseConfigured()) {
+    if (!aiSummary && files.length > 0) {
       analyzePhoto(files[0])
-    } else if (!aiSummary && !isSupabaseConfigured()) {
-      setAiSummary('Photo captured — connect Supabase to enable AI identification.')
+    }
+  }
+
+  const handleSuggestLabel = async () => {
+    const contents = manualContents || aiSummary
+    if (!contents) return
+    setSuggestingLabel(true)
+    try {
+      const suggested = await ai.suggestLabel(contents, selectedRoom?.name)
+      if (suggested) setLabel(suggested)
+    } catch {
+      // silently fail — optional feature
+    } finally {
+      setSuggestingLabel(false)
     }
   }
 
@@ -150,7 +174,20 @@ export default function AddBox() {
 
       <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 block">Label (optional)</label>
-        <input type="text" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Miles's toys, Kitchen essentials" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 dark:text-white" />
+        <div className="flex gap-2">
+          <input type="text" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Miles's toys, Kitchen essentials" className="flex-1 text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 dark:text-white" />
+          {(manualContents || aiSummary) && (
+            <button
+              type="button"
+              onClick={handleSuggestLabel}
+              disabled={suggestingLabel}
+              className="flex items-center gap-1 px-3 py-2 text-xs font-medium bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg border border-purple-200 dark:border-purple-500/30 hover:bg-purple-100 dark:hover:bg-purple-500/20 disabled:opacity-50"
+            >
+              {suggestingLabel ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              AI
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">

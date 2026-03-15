@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Trash2, Package, ClipboardList } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Package, ClipboardList, Sparkles, Loader2 } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
 import BoxCard from '../components/BoxCard'
 import { useRooms, useRoomTasks } from '../hooks/useStore'
 import store from '../lib/store'
+import { ai } from '../lib/ai'
 
 export default function RoomDetail() {
   const { id } = useParams()
@@ -14,6 +15,8 @@ export default function RoomDetail() {
   const [tab, setTab] = useState('boxes')
   const [newTask, setNewTask] = useState('')
   const [taskPhase, setTaskPhase] = useState('before_move')
+  const [loadingTips, setLoadingTips] = useState(false)
+  const [tips, setTips] = useState(null)
 
   const room = rooms.find(r => r.id === id)
   if (!room) return <div className="text-center py-12"><p className="text-slate-400">Room not found</p><button onClick={() => navigate('/rooms')} className="text-blue-500 mt-2 text-sm">Back to rooms</button></div>
@@ -24,6 +27,19 @@ export default function RoomDetail() {
   const afterTasks = tasks.filter(t => t.phase === 'after_move')
 
   const handleAddTask = (e) => { e.preventDefault(); if (!newTask.trim()) return; addTask(newTask.trim(), taskPhase); setNewTask('') }
+
+  const handleGetTips = async () => {
+    setLoadingTips(true)
+    try {
+      const boxLabels = boxes.map(b => b.label || b.manual_contents).filter(Boolean)
+      const result = await ai.packingTips(room.name, boxLabels)
+      setTips(result)
+    } catch {
+      setTips('Could not load tips — make sure the AI server is running.')
+    } finally {
+      setLoadingTips(false)
+    }
+  }
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
@@ -43,6 +59,27 @@ export default function RoomDetail() {
           <ClipboardList className="w-4 h-4" />Tasks ({tasks.filter(t => !t.is_done).length})
         </button>
       </div>
+
+      {/* AI Packing Tips */}
+      {!tips && (
+        <button
+          onClick={handleGetTips}
+          disabled={loadingTips}
+          className="w-full flex items-center justify-center gap-2 py-2.5 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl border border-purple-200 dark:border-purple-500/20 text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-500/20 disabled:opacity-50"
+        >
+          {loadingTips ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          Get AI Packing Tips
+        </button>
+      )}
+      {tips && (
+        <div className="bg-purple-50 dark:bg-purple-500/10 rounded-xl border border-purple-200 dark:border-purple-500/20 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="w-4 h-4 text-purple-500" />
+            <span className="text-sm font-medium text-purple-700 dark:text-purple-300">AI Packing Tips</span>
+          </div>
+          <div className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">{tips}</div>
+        </div>
+      )}
 
       {tab === 'boxes' && (
         <div className="space-y-2">
