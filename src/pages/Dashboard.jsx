@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Package, AlertTriangle, Star, Truck, Archive, CheckCircle2, Clock, ArrowRight, Calendar, Timer, MessageCircle } from 'lucide-react'
+import { Package, AlertTriangle, Star, Truck, Archive, CheckCircle2, Clock, ArrowRight, Calendar, Timer, MessageCircle, ClipboardList } from 'lucide-react'
 import { motion } from 'framer-motion'
 import ProgressRing from '../components/ProgressRing'
 import { useStats, useRooms, useActivityLog, useEssentials } from '../hooks/useStore'
@@ -160,7 +160,7 @@ export default function Dashboard() {
       </button>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         <button
           onClick={() => navigate('/unpack')}
           className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 text-left active:scale-[0.98] transition-transform"
@@ -200,6 +200,14 @@ export default function Dashboard() {
           <MessageCircle className="w-5 h-5 text-purple-500 mb-2" />
           <div className="font-medium text-sm text-slate-800 dark:text-white">Landlord Q's</div>
           <div className="text-xs text-slate-400 mt-0.5">Questions & requests</div>
+        </button>
+        <button
+          onClick={() => navigate('/checklist')}
+          className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 text-left active:scale-[0.98] transition-transform"
+        >
+          <ClipboardList className="w-5 h-5 text-teal-500 mb-2" />
+          <div className="font-medium text-sm text-slate-800 dark:text-white">Move-In Checklist</div>
+          <div className="text-xs text-slate-400 mt-0.5">Utilities, address, setup</div>
         </button>
       </div>
 

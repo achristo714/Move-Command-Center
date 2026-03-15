@@ -27,6 +27,7 @@ const emptyState = {
   room_tasks: [],
   activity_log: [],
   landlord_questions: [],
+  move_checklist: [],
   next_box_number: 1,
   initialized: false,
 }
@@ -422,6 +423,43 @@ export const store = {
 
   removeLandlordQuestion(id) {
     state = { ...state, landlord_questions: (state.landlord_questions || []).filter(q => q.id !== id) }
+    notify()
+  },
+
+  // Move checklist
+  getMoveChecklist() {
+    return [...(state.move_checklist || [])].sort((a, b) => a.sort_order - b.sort_order)
+  },
+
+  addChecklistItem(text, category = 'general') {
+    const item = { id: createId(), text, category, is_done: false, sort_order: (state.move_checklist || []).length, created_at: now() }
+    state = { ...state, move_checklist: [...(state.move_checklist || []), item] }
+    notify()
+    return item
+  },
+
+  toggleChecklistItem(id) {
+    state = {
+      ...state,
+      move_checklist: (state.move_checklist || []).map(item =>
+        item.id === id ? { ...item, is_done: !item.is_done } : item
+      ),
+    }
+    notify()
+  },
+
+  updateChecklistItem(id, updates) {
+    state = {
+      ...state,
+      move_checklist: (state.move_checklist || []).map(item =>
+        item.id === id ? { ...item, ...updates } : item
+      ),
+    }
+    notify()
+  },
+
+  removeChecklistItem(id) {
+    state = { ...state, move_checklist: (state.move_checklist || []).filter(item => item.id !== id) }
     notify()
   },
 
