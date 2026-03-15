@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, Plus, Trash2, Download, RotateCcw, MapPin, Calculator, Moon, Sun } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Download, RotateCcw, MapPin, Calculator, Moon, Sun, Pencil, Check, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useRooms } from '../hooks/useStore'
 import { useTheme } from '../hooks/useTheme'
@@ -7,9 +7,11 @@ import store from '../lib/store'
 
 export default function Settings() {
   const navigate = useNavigate()
-  const { rooms, addRoom, removeRoom } = useRooms()
+  const { rooms, addRoom, removeRoom, renameRoom } = useRooms()
   const { dark, toggle } = useTheme()
   const [newRoom, setNewRoom] = useState('')
+  const [editingRoom, setEditingRoom] = useState(null)
+  const [editName, setEditName] = useState('')
 
   const handleAddRoom = (e) => { e.preventDefault(); if (!newRoom.trim()) return; addRoom(newRoom.trim()); setNewRoom('') }
 
@@ -59,13 +61,25 @@ export default function Settings() {
         <div className="space-y-1 mb-3">
           {rooms.map(room => {
             const boxCount = store.getBoxes().filter(b => b.destination_room_id === room.id).length
+            const isEditing = editingRoom === room.id
             return (
-              <div key={room.id} className="flex items-center justify-between py-1.5">
-                <span className="text-sm text-slate-700 dark:text-slate-300">{room.name}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400">{boxCount} boxes</span>
-                  <button onClick={() => { if (boxCount > 0) { alert(`Can't remove "${room.name}" — it has ${boxCount} boxes assigned.`); return }; removeRoom(room.id) }} className="text-slate-300 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
+              <div key={room.id} className="flex items-center justify-between py-1.5 gap-2">
+                {isEditing ? (
+                  <form onSubmit={(e) => { e.preventDefault(); renameRoom(room.id, editName); setEditingRoom(null) }} className="flex-1 flex items-center gap-1">
+                    <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="flex-1 text-sm border border-blue-400 dark:border-blue-500 rounded px-2 py-1 bg-white dark:bg-slate-800 dark:text-white" autoFocus />
+                    <button type="submit" className="text-green-500"><Check className="w-4 h-4" /></button>
+                    <button type="button" onClick={() => setEditingRoom(null)} className="text-slate-400"><X className="w-4 h-4" /></button>
+                  </form>
+                ) : (
+                  <span className="text-sm text-slate-700 dark:text-slate-300 flex-1">{room.name}</span>
+                )}
+                {!isEditing && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400">{boxCount} boxes</span>
+                    <button onClick={() => { setEditingRoom(room.id); setEditName(room.name) }} className="text-slate-300 hover:text-blue-400"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => { if (boxCount > 0) { alert(`Can't remove "${room.name}" — it has ${boxCount} boxes assigned.`); return }; removeRoom(room.id) }} className="text-slate-300 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
+                )}
               </div>
             )
           })}

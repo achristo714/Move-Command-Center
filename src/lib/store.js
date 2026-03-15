@@ -178,6 +178,12 @@ export const store = {
     sb(() => supabase.from('rooms').delete().eq('id', id))
   },
 
+  renameRoom(id, newName) {
+    state = { ...state, rooms: state.rooms.map(r => r.id === id ? { ...r, name: newName } : r) }
+    notify()
+    sb(() => supabase.from('rooms').update({ name: newName }).eq('id', id))
+  },
+
   // Boxes
   getBoxes() {
     return [...state.boxes].sort((a, b) => b.box_number - a.box_number)
@@ -199,6 +205,7 @@ export const store = {
       handling_notes: data.handling_notes || '',
       ai_summary: data.ai_summary || '',
       manual_contents: data.manual_contents || '',
+      box_size: data.box_size || null,
       photo_urls: data.photo_urls || [],
       created_by: null,
       household_id: 'default',

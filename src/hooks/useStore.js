@@ -30,6 +30,7 @@ export function useRooms() {
     rooms: s.getRooms(),
     addRoom: s.addRoom.bind(s),
     removeRoom: s.removeRoom.bind(s),
+    renameRoom: s.renameRoom.bind(s),
   }
 }
 

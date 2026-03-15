@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Package, AlertTriangle, Star, Truck, Archive, CheckCircle2, Clock, ArrowRight } from 'lucide-react'
+import { Package, AlertTriangle, Star, Truck, Archive, CheckCircle2, Clock, ArrowRight, Calendar, Timer } from 'lucide-react'
 import { motion } from 'framer-motion'
 import ProgressRing from '../components/ProgressRing'
 import { useStats, useRooms, useActivityLog, useEssentials } from '../hooks/useStore'
@@ -195,6 +195,9 @@ export default function Dashboard() {
         </button>
       </div>
 
+      {/* Countdown + Packing Schedule */}
+      <PackingSchedule rooms={rooms} store={store} />
+
       {/* Activity Feed */}
       {activity.length > 0 && (
         <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 p-4">
@@ -217,6 +220,91 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function PackingSchedule({ rooms, store }) {
+  const moveDate = new Date('2026-05-01')
+  const today = new Date()
+  const daysLeft = Math.max(0, Math.ceil((moveDate - today) / (1000 * 60 * 60 * 24)))
+  const weeksLeft = Math.ceil(daysLeft / 7)
+
+  // Packing priority: least-used rooms first, most-used rooms last
+  const schedule = [
+    { week: 'Now (6+ weeks out)', priority: 'low', rooms: ['Storage Locker', 'Basement', 'Garage', 'Donate / Discard'], tip: 'Start with rooms you barely use. Seasonal items, storage, decorations.' },
+    { week: '4-5 weeks out', priority: 'medium', rooms: ['Office', "Lydia's Room", "Miles's Room"], tip: "Kids' rooms (except daily essentials), office books & files, wall art." },
+    { week: '2-3 weeks out', priority: 'high', rooms: ['Living Room', 'Primary Bedroom', 'Upstairs Bath', 'Basement Full Bath'], tip: 'Leave out 1 week of clothes/towels. Pack everything else.' },
+    { week: 'Final week', priority: 'urgent', rooms: ['Kitchen', 'Powder Room'], tip: 'Kitchen last (you need it). Use paper plates the final days. Pack essentials box.' },
+  ]
+
+  const getPhaseForDays = (d) => {
+    if (d > 35) return 0
+    if (d > 21) return 1
+    if (d > 7) return 2
+    return 3
+  }
+
+  const currentPhase = getPhaseForDays(daysLeft)
+
+  return (
+    <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-blue-500" />
+          Packing Schedule
+        </h2>
+        <div className="flex items-center gap-1 bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-full">
+          <Timer className="w-3.5 h-3.5 text-blue-500" />
+          <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{daysLeft}</span>
+          <span className="text-xs text-blue-500">days to go</span>
+        </div>
+      </div>
+
+      <div className="text-xs text-slate-400 mb-3">
+        Move day: May 1, 2026 · ~{weeksLeft} weeks left
+      </div>
+
+      <div className="space-y-3">
+        {schedule.map((phase, i) => {
+          const isCurrent = i === currentPhase
+          const isPast = i < currentPhase
+          const matchingRooms = rooms.filter(r => phase.rooms.some(pr => r.name.includes(pr) || pr.includes(r.name)))
+          const roomBoxes = matchingRooms.flatMap(r => store.getBoxes().filter(b => b.destination_room_id === r.id))
+          const packedCount = roomBoxes.length
+
+          return (
+            <div
+              key={i}
+              className={`rounded-lg p-3 border transition-colors ${
+                isCurrent
+                  ? 'border-blue-400 dark:border-blue-500/50 bg-blue-50/50 dark:bg-blue-500/5'
+                  : isPast
+                  ? 'border-green-300 dark:border-green-500/30 bg-green-50/30 dark:bg-green-500/5'
+                  : 'border-slate-200 dark:border-slate-700/30'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  {isPast && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                  {isCurrent && <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
+                  <span className={`text-sm font-medium ${isCurrent ? 'text-blue-700 dark:text-blue-400' : isPast ? 'text-green-700 dark:text-green-400' : 'text-slate-600 dark:text-slate-400'}`}>
+                    {phase.week}
+                  </span>
+                  {isCurrent && <span className="text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-medium">NOW</span>}
+                </div>
+                {packedCount > 0 && <span className="text-xs text-slate-400">{packedCount} packed</span>}
+              </div>
+              <div className="flex flex-wrap gap-1 mb-1">
+                {phase.rooms.map(r => (
+                  <span key={r} className="text-xs bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full">{r}</span>
+                ))}
+              </div>
+              <p className="text-xs text-slate-400">{phase.tip}</p>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

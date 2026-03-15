@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Camera, Upload, X, AlertTriangle, Star, ArrowLeft, Loader2 } from 'lucide-react'
+import { Camera, Upload, X, AlertTriangle, Star, ArrowLeft, Loader2, Pen } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useRooms } from '../hooks/useStore'
 import store from '../lib/store'
+import { BOX_SIZES, generateBoxCode } from '../lib/boxSizes'
 
 export default function AddBox() {
   const navigate = useNavigate()
@@ -19,9 +20,13 @@ export default function AddBox() {
   const [isPriority, setIsPriority] = useState(false)
   const [handlingNotes, setHandlingNotes] = useState('')
   const [manualContents, setManualContents] = useState('')
+  const [boxSize, setBoxSize] = useState('')
   const [photos, setPhotos] = useState([])
   const [analyzing, setAnalyzing] = useState(false)
   const [aiSummary, setAiSummary] = useState('')
+
+  const selectedRoom = rooms.find(r => r.id === roomId)
+  const sharpieCode = generateBoxCode(nextNumber, selectedRoom?.name)
 
   const handleFiles = (files) => {
     const newPhotos = Array.from(files).map(file => ({
@@ -49,13 +54,14 @@ export default function AddBox() {
 
   const handleSave = () => {
     const box = store.addBox({
-      label,
+      label: label || sharpieCode,
       destination_room_id: roomId || null,
       is_fragile: isFragile,
       is_priority: isPriority,
       handling_notes: handlingNotes,
       manual_contents: manualContents,
       ai_summary: aiSummary,
+      box_size: boxSize || null,
       photo_urls: photos.map(p => p.preview),
     })
     navigate(`/boxes/${box.id}`)
@@ -68,6 +74,20 @@ export default function AddBox() {
           <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
         </button>
         <h1 className="text-xl font-bold text-slate-800 dark:text-white">Add Box #{nextNumber}</h1>
+      </div>
+
+      {/* Sharpie Code */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 rounded-xl border border-blue-200 dark:border-blue-500/20 p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Pen className="w-4 h-4 text-blue-500" />
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Write this on the box:</span>
+        </div>
+        <div className="text-3xl font-mono font-bold text-blue-700 dark:text-blue-400 tracking-wider">
+          {sharpieCode}
+        </div>
+        <p className="text-xs text-slate-400 mt-1">
+          {selectedRoom ? selectedRoom.name : 'Select a room below to generate code'}
+        </p>
       </div>
 
       <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
@@ -127,6 +147,25 @@ export default function AddBox() {
           <Star className="w-4 h-4" />
           <span className="text-sm font-medium">Open First</span>
         </button>
+      </div>
+
+      {/* Box Size */}
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Box Size (optional)</label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {BOX_SIZES.map(s => (
+            <button
+              key={s.value}
+              type="button"
+              onClick={() => setBoxSize(boxSize === s.value ? '' : s.value)}
+              className={`text-left p-2 rounded-lg border-2 transition-colors ${boxSize === s.value ? 'border-blue-400 bg-blue-50 dark:bg-blue-500/10' : 'border-slate-200 dark:border-slate-600'}`}
+            >
+              <div className={`text-sm font-medium ${boxSize === s.value ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>{s.label}</div>
+              <div className="text-[10px] text-slate-400">{s.dimensions}</div>
+              <div className="text-[10px] text-slate-400">{s.desc}</div>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
