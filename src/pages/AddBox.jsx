@@ -65,14 +65,23 @@ export default function AddBox() {
     }
   }
 
-  const handleFiles = (files) => {
-    const newPhotos = Array.from(files).map(file => ({
+  const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+
+  const handleFiles = async (files) => {
+    const fileArr = Array.from(files)
+    // Convert to data URLs so they persist in localStorage/Supabase
+    const newPhotos = await Promise.all(fileArr.map(async (file) => ({
       file,
-      preview: URL.createObjectURL(file),
-    }))
+      preview: await fileToDataUrl(file),
+    })))
     setPhotos(prev => [...prev, ...newPhotos])
-    if (!aiSummary && files.length > 0) {
-      analyzePhoto(files[0])
+    if (!aiSummary && fileArr.length > 0) {
+      analyzePhoto(fileArr[0])
     }
   }
 
@@ -93,7 +102,6 @@ export default function AddBox() {
   const removePhoto = (index) => {
     setPhotos(prev => {
       const next = [...prev]
-      URL.revokeObjectURL(next[index].preview)
       next.splice(index, 1)
       return next
     })
