@@ -94,7 +94,7 @@ export default function Dashboard() {
         <StatCard icon={Package} label="Total Boxes" value={stats.total} bgColor="bg-[#d4e4d9]" color="text-[#6a9b7a]" darkBgColor="dark:bg-indigo-500/10" darkColor="dark:text-indigo-400" />
         <StatCard icon={Clock} label="Packed Today" value={stats.packedToday} bgColor="bg-[#f5e6d0]" color="text-[#c4935a]" darkBgColor="dark:bg-amber-500/10" darkColor="dark:text-amber-400" />
         <StatCard icon={AlertTriangle} label="Fragile" value={stats.fragileCount} bgColor="bg-[#f5d5d2]" color="text-[#c97a74]" darkBgColor="dark:bg-red-500/10" darkColor="dark:text-red-400" />
-        <StatCard icon={Star} label="Priority" value={stats.priorityUnpacked} bgColor="bg-[#f5ecd0]" color="text-[#c4a03a]" darkBgColor="dark:bg-yellow-500/10" darkColor="dark:text-yellow-400" />
+        <StatCard icon={StarIcon} label="Priority" value={stats.priorityUnpacked} bgColor="bg-[#f5ecd0]" color="text-[#c4a03a]" darkBgColor="dark:bg-yellow-500/10" darkColor="dark:text-yellow-400" />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
