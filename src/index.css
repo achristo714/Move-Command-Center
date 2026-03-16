@@ -45,24 +45,31 @@
     background-color: #faf6f0;
     background-image:
       /* tiny leaves */
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cpath d='M25 15 Q20 8 30 11' fill='%239bb8a4' opacity='0.08'/%3E%3Cpath d='M165 45 Q160 38 170 41' fill='%239bb8a4' opacity='0.06'/%3E%3Cpath d='M85 175 Q80 168 90 171' fill='%239bb8a4' opacity='0.07'/%3E%3Cpath d='M145 155 Q140 148 150 151' fill='%239bb8a4' opacity='0.05'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cpath d='M25 15 Q20 5 32 10' fill='%239bb8a4' opacity='0.25'/%3E%3Cpath d='M165 45 Q160 35 172 40' fill='%239bb8a4' opacity='0.20'/%3E%3Cpath d='M85 175 Q80 165 92 170' fill='%239bb8a4' opacity='0.22'/%3E%3Cpath d='M145 155 Q140 145 152 150' fill='%239bb8a4' opacity='0.18'/%3E%3C/svg%3E"),
       /* tiny flowers */
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Ccircle cx='50' cy='40' r='2' fill='%23f5e6b8' opacity='0.12'/%3E%3Ccircle cx='50' cy='35' r='2.2' fill='%23eab8be' opacity='0.08'/%3E%3Ccircle cx='50' cy='45' r='2.2' fill='%23eab8be' opacity='0.08'/%3E%3Ccircle cx='45' cy='40' r='2.2' fill='%23eab8be' opacity='0.08'/%3E%3Ccircle cx='55' cy='40' r='2.2' fill='%23eab8be' opacity='0.08'/%3E%3Ccircle cx='230' cy='180' r='2' fill='%23f5e6b8' opacity='0.10'/%3E%3Ccircle cx='230' cy='175' r='2' fill='%23c5b5d6' opacity='0.07'/%3E%3Ccircle cx='230' cy='185' r='2' fill='%23c5b5d6' opacity='0.07'/%3E%3Ccircle cx='225' cy='180' r='2' fill='%23c5b5d6' opacity='0.07'/%3E%3Ccircle cx='235' cy='180' r='2' fill='%23c5b5d6' opacity='0.07'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Ccircle cx='50' cy='40' r='2.5' fill='%23f5e6b8' opacity='0.35'/%3E%3Ccircle cx='50' cy='34' r='2.8' fill='%23eab8be' opacity='0.22'/%3E%3Ccircle cx='50' cy='46' r='2.8' fill='%23eab8be' opacity='0.22'/%3E%3Ccircle cx='44' cy='40' r='2.8' fill='%23eab8be' opacity='0.22'/%3E%3Ccircle cx='56' cy='40' r='2.8' fill='%23eab8be' opacity='0.22'/%3E%3Ccircle cx='230' cy='200' r='2.5' fill='%23f5e6b8' opacity='0.30'/%3E%3Ccircle cx='230' cy='194' r='2.5' fill='%23c5b5d6' opacity='0.20'/%3E%3Ccircle cx='230' cy='206' r='2.5' fill='%23c5b5d6' opacity='0.20'/%3E%3Ccircle cx='224' cy='200' r='2.5' fill='%23c5b5d6' opacity='0.20'/%3E%3Ccircle cx='236' cy='200' r='2.5' fill='%23c5b5d6' opacity='0.20'/%3E%3Ccircle cx='140' cy='120' r='2' fill='%23f5e6b8' opacity='0.28'/%3E%3Ccircle cx='140' cy='115' r='2.2' fill='%23b5cfe0' opacity='0.18'/%3E%3Ccircle cx='140' cy='125' r='2.2' fill='%23b5cfe0' opacity='0.18'/%3E%3Ccircle cx='135' cy='120' r='2.2' fill='%23b5cfe0' opacity='0.18'/%3E%3Ccircle cx='145' cy='120' r='2.2' fill='%23b5cfe0' opacity='0.18'/%3E%3C/svg%3E"),
       /* stars */
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250' viewBox='0 0 250 250'%3E%3Cpath d='M120 30L121.5 34L126 34.5L122.5 37L123.5 41L120 39L116.5 41L117.5 37L114 34.5L118.5 34Z' fill='%23f0d58c' opacity='0.10'/%3E%3Cpath d='M40 200L41.5 204L46 204.5L42.5 207L43.5 211L40 209L36.5 211L37.5 207L34 204.5L38.5 204Z' fill='%23f0d58c' opacity='0.08'/%3E%3C/svg%3E"),
-      /* dots */
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Ccircle cx='30' cy='90' r='1.5' fill='%23eab8be' opacity='0.08'/%3E%3Ccircle cx='90' cy='30' r='1' fill='%23b5cfe0' opacity='0.08'/%3E%3Ccircle cx='150' cy='120' r='1.5' fill='%23c5b5d6' opacity='0.06'/%3E%3Ccircle cx='60' cy='150' r='1' fill='%239bb8a4' opacity='0.07'/%3E%3Ccircle cx='130' cy='60' r='1.2' fill='%23e8a87c' opacity='0.06'/%3E%3C/svg%3E");
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250' viewBox='0 0 250 250'%3E%3Cpath d='M120 30L122 35L127 35.5L123 38.5L124 43L120 40.5L116 43L117 38.5L113 35.5L118 35Z' fill='%23f0d58c' opacity='0.30'/%3E%3Cpath d='M40 200L42 205L47 205.5L43 208.5L44 213L40 210.5L36 213L37 208.5L33 205.5L38 205Z' fill='%23f0d58c' opacity='0.25'/%3E%3Cpath d='M200 120L202 125L207 125.5L203 128.5L204 133L200 130.5L196 133L197 128.5L193 125.5L198 125Z' fill='%23f0d58c' opacity='0.20'/%3E%3C/svg%3E"),
+      /* dots / berries */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Ccircle cx='30' cy='90' r='2' fill='%23eab8be' opacity='0.22'/%3E%3Ccircle cx='90' cy='30' r='1.5' fill='%23b5cfe0' opacity='0.22'/%3E%3Ccircle cx='150' cy='120' r='2' fill='%23c5b5d6' opacity='0.18'/%3E%3Ccircle cx='60' cy='150' r='1.5' fill='%239bb8a4' opacity='0.20'/%3E%3Ccircle cx='130' cy='60' r='1.8' fill='%23e8a87c' opacity='0.18'/%3E%3Ccircle cx='20' cy='20' r='1.2' fill='%23eab8be' opacity='0.15'/%3E%3Ccircle cx='160' cy='160' r='1.2' fill='%23c5b5d6' opacity='0.15'/%3E%3C/svg%3E");
   }
 
-  /* Subtle cross-hatch pattern for cards */
+  /* Cross-hatch pattern for cards */
   .card-hatch {
     background-image:
       repeating-linear-gradient(
         45deg,
         transparent,
-        transparent 8px,
-        rgba(155, 184, 164, 0.03) 8px,
-        rgba(155, 184, 164, 0.03) 9px
+        transparent 7px,
+        rgba(155, 184, 164, 0.10) 7px,
+        rgba(155, 184, 164, 0.10) 8px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 7px,
+        rgba(155, 184, 164, 0.07) 7px,
+        rgba(155, 184, 164, 0.07) 8px
       );
   }
 
@@ -72,9 +79,9 @@
       repeating-linear-gradient(
         -45deg,
         transparent,
-        transparent 6px,
-        rgba(234, 184, 190, 0.06) 6px,
-        rgba(234, 184, 190, 0.06) 7px
+        transparent 5px,
+        rgba(234, 184, 190, 0.15) 5px,
+        rgba(234, 184, 190, 0.15) 6px
       );
   }
 
@@ -84,33 +91,36 @@
       repeating-linear-gradient(
         45deg,
         transparent,
-        transparent 6px,
-        rgba(155, 184, 164, 0.06) 6px,
-        rgba(155, 184, 164, 0.06) 7px
+        transparent 5px,
+        rgba(155, 184, 164, 0.15) 5px,
+        rgba(155, 184, 164, 0.15) 6px
       );
   }
 
-  /* Polka dot pattern — tiny and cute */
+  /* Polka dot pattern — cute and visible */
   .polka-dot {
-    background-image: radial-gradient(circle, rgba(197, 181, 214, 0.08) 1px, transparent 1px);
-    background-size: 16px 16px;
+    background-image:
+      radial-gradient(circle, rgba(234, 184, 190, 0.18) 2px, transparent 2px),
+      radial-gradient(circle, rgba(197, 181, 214, 0.15) 1.5px, transparent 1.5px);
+    background-size: 24px 24px, 24px 24px;
+    background-position: 0 0, 12px 12px;
   }
 
   /* Wavy lines pattern */
   .wavy-lines {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='20' viewBox='0 0 80 20'%3E%3Cpath d='M0 10 C10 5 20 5 30 10 C40 15 50 15 60 10 C70 5 80 5 80 10' stroke='%239bb8a4' stroke-width='0.5' fill='none' opacity='0.08'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='20' viewBox='0 0 80 20'%3E%3Cpath d='M0 10 C10 5 20 5 30 10 C40 15 50 15 60 10 C70 5 80 5 80 10' stroke='%239bb8a4' stroke-width='1' fill='none' opacity='0.18'/%3E%3C/svg%3E");
     background-size: 80px 20px;
   }
 
   /* Diamond/argyle pattern */
   .diamond-pattern {
     background-image:
-      linear-gradient(45deg, rgba(245, 230, 184, 0.06) 25%, transparent 25%),
-      linear-gradient(-45deg, rgba(245, 230, 184, 0.06) 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, rgba(245, 230, 184, 0.06) 75%),
-      linear-gradient(-45deg, transparent 75%, rgba(245, 230, 184, 0.06) 75%);
-    background-size: 24px 24px;
-    background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+      linear-gradient(45deg, rgba(245, 230, 184, 0.15) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(245, 230, 184, 0.15) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(245, 230, 184, 0.15) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(245, 230, 184, 0.15) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
   }
 
   .dot-grid {
