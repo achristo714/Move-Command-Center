@@ -47,9 +47,15 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
           </button>
         )}
 
-        <div className="flex-shrink-0 w-10 h-10 bg-[#f0ebe4] dark:bg-gray-800 rounded-xl flex items-center justify-center">
-          <Package className="w-5 h-5 text-[#8a7e72] dark:text-gray-500" />
-        </div>
+        {box.photo_urls && box.photo_urls.length > 0 ? (
+          <div className="flex-shrink-0 w-10 h-10 rounded-xl overflow-hidden">
+            <img src={box.photo_urls[0]} alt="" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="flex-shrink-0 w-10 h-10 bg-[#f0ebe4] dark:bg-gray-800 rounded-xl flex items-center justify-center">
+            <Package className="w-5 h-5 text-[#8a7e72] dark:text-gray-500" />
+          </div>
+        )}
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
