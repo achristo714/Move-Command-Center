@@ -106,7 +106,7 @@ export default function RoomDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => !isEditing && navigate(`/rooms/${room.id}`)}
-              className={`w-full bg-white dark:bg-slate-800/50 rounded-xl border p-4 text-left cursor-pointer active:scale-[0.98] transition-transform ${allUnpacked ? 'border-green-300 dark:border-green-500/30 bg-green-50/50 dark:bg-green-500/5' : 'border-slate-200 dark:border-slate-700/50'}`}
+              className={`w-full bg-white dark:bg-slate-800/50 rounded-xl border p-4 text-left cursor-pointer active:scale-[0.98] transition-transform card-hatch ${allUnpacked ? 'border-green-300 dark:border-green-500/30 bg-green-50/50 dark:bg-green-500/5' : 'border-slate-200 dark:border-slate-700/50'}`}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 flex-1 min-w-0">

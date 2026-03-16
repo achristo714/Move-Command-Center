@@ -23,7 +23,7 @@ const QUICK_TILES = [
 
 function StatCard({ icon: Icon, label, value, bg, iconColor, darkBg, darkIcon }) {
   return (
-    <div className={`rounded-2xl border p-3 bg-white dark:bg-gray-900/60 border-[#e8ddd0]/60 dark:border-gray-800`}>
+    <div className={`rounded-2xl border p-3 bg-white dark:bg-gray-900/60 border-[#e8ddd0]/60 dark:border-gray-800 card-hatch`}>
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${bg} ${darkBg}`}>
         <Icon className={`w-4.5 h-4.5 ${iconColor} ${darkIcon}`} />
       </div>
@@ -60,7 +60,7 @@ export default function Dashboard() {
       <div className={`rounded-3xl p-6 text-center relative overflow-hidden ${
         dark
           ? 'bg-gray-900/60 border border-gray-800'
-          : 'bg-white border border-[#e8ddd0]/60'
+          : 'bg-white border border-[#e8ddd0]/60 polka-dot'
       }`}>
         {/* Scattered pattern in hero */}
         {!dark && <ScatteredPattern />}
@@ -116,7 +116,7 @@ export default function Dashboard() {
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Status Breakdown */}
         <div className={`rounded-2xl p-4 ${
-          dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
+          dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60 stripe-sage'
         }`}>
           <h2 className={`font-semibold mb-3 ${dark ? 'text-white' : 'text-[#3d3429]'}`}>Status Breakdown</h2>
           <div className="space-y-2">
@@ -146,7 +146,7 @@ export default function Dashboard() {
 
         {/* Room Overview */}
         <div className={`rounded-2xl p-4 ${
-          dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
+          dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60 wavy-lines'
         }`}>
           <div className="flex items-center justify-between mb-3">
             <h2 className={`font-semibold ${dark ? 'text-white' : 'text-[#3d3429]'}`}>Rooms</h2>
@@ -194,7 +194,7 @@ export default function Dashboard() {
         className={`w-full rounded-2xl border p-4 text-left relative overflow-hidden ${
           dark
             ? 'bg-amber-500/5 border-amber-500/20'
-            : 'bg-gradient-to-r from-[#faf0e4] to-[#f5e6d0] border-[#e8d5be]'
+            : 'bg-gradient-to-r from-[#faf0e4] to-[#f5e6d0] border-[#e8d5be] diamond-pattern'
         }`}
       >
         {!dark && (
@@ -247,7 +247,7 @@ export default function Dashboard() {
       {/* Activity Feed */}
       {activity.length > 0 && (
         <div className={`rounded-2xl p-4 ${
-          dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
+          dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60 diamond-pattern'
         }`}>
           <h2 className={`font-semibold mb-3 ${dark ? 'text-white' : 'text-[#3d3429]'}`}>Recent Activity</h2>
           <div className="space-y-2">
@@ -300,7 +300,7 @@ function PackingSchedule({ rooms, store, dark }) {
 
   return (
     <div className={`rounded-2xl p-4 relative overflow-hidden ${
-      dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
+      dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60 stripe-warm'
     }`}>
       {!dark && (
         <>

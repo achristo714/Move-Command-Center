@@ -149,7 +149,7 @@ export default function MoveChecklist() {
       </div>
 
       {/* Progress bar */}
-      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 stripe-sage">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{pct}% complete</span>
           <span className="text-xs text-slate-400">{totalItems - doneItems} remaining</span>
@@ -165,7 +165,7 @@ export default function MoveChecklist() {
       </div>
 
       {/* Add new item */}
-      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 space-y-3">
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 space-y-3 card-hatch">
         <div className="flex gap-2">
           <input
             type="text"

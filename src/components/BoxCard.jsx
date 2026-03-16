@@ -28,7 +28,7 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className={`bg-white dark:bg-gray-900/60 rounded-2xl border transition-all active:scale-[0.98] ${
+      className={`bg-white dark:bg-gray-900/60 rounded-2xl border transition-all active:scale-[0.98] card-hatch ${
         box.is_priority
           ? 'border-[#e8c55a]/60 dark:border-yellow-500/40 ring-1 ring-[#f5ecd0] dark:ring-yellow-500/20'
           : 'border-[#e8ddd0]/60 dark:border-gray-800'

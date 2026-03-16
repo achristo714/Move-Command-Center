@@ -137,7 +137,7 @@ export default function AddBox() {
         </p>
       </div>
 
-      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 card-hatch">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Photos</label>
         <div className="flex gap-2 flex-wrap">
           {photos.map((photo, i) => (
@@ -172,7 +172,7 @@ export default function AddBox() {
         )}
       </div>
 
-      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 card-hatch">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 block">Label (optional)</label>
         <div className="flex gap-2">
           <input type="text" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Miles's toys, Kitchen essentials" className="flex-1 text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 dark:text-white" />
@@ -190,7 +190,7 @@ export default function AddBox() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 card-hatch">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 block">Destination Room</label>
         <select value={roomId} onChange={e => setRoomId(e.target.value)} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 dark:text-white">
           <option value="">Select a room...</option>
@@ -198,7 +198,7 @@ export default function AddBox() {
         </select>
       </div>
 
-      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 flex gap-3">
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 card-hatch flex gap-3">
         <button onClick={() => setIsFragile(!isFragile)} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-colors ${isFragile ? 'border-red-400 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400' : 'border-slate-200 dark:border-slate-600 text-slate-400'}`}>
           <AlertTriangle className="w-4 h-4" />
           <span className="text-sm font-medium">Fragile</span>
@@ -210,7 +210,7 @@ export default function AddBox() {
       </div>
 
       {/* Box Size */}
-      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 card-hatch">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Box Size (optional)</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {BOX_SIZES.map(s => (
@@ -228,12 +228,12 @@ export default function AddBox() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 card-hatch">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 block">Handling Notes (optional)</label>
         <input type="text" value={handlingNotes} onChange={e => setHandlingNotes(e.target.value)} placeholder="e.g. This side up, Heavy - two person lift" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 dark:text-white" />
       </div>
 
-      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4">
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 card-hatch">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 block">Contents (optional)</label>
         <textarea value={manualContents} onChange={e => setManualContents(e.target.value)} placeholder="List what's in this box..." rows={3} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 dark:text-white resize-none" />
       </div>

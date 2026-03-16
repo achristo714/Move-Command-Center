@@ -39,6 +39,80 @@
   }
 
   /* ── "HERS" light mode: cozy, organic, soft ── */
+
+  /* Scattered AC-style background pattern for the whole page */
+  .ac-bg {
+    background-color: #faf6f0;
+    background-image:
+      /* tiny leaves */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cpath d='M25 15 Q20 8 30 11' fill='%239bb8a4' opacity='0.08'/%3E%3Cpath d='M165 45 Q160 38 170 41' fill='%239bb8a4' opacity='0.06'/%3E%3Cpath d='M85 175 Q80 168 90 171' fill='%239bb8a4' opacity='0.07'/%3E%3Cpath d='M145 155 Q140 148 150 151' fill='%239bb8a4' opacity='0.05'/%3E%3C/svg%3E"),
+      /* tiny flowers */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Ccircle cx='50' cy='40' r='2' fill='%23f5e6b8' opacity='0.12'/%3E%3Ccircle cx='50' cy='35' r='2.2' fill='%23eab8be' opacity='0.08'/%3E%3Ccircle cx='50' cy='45' r='2.2' fill='%23eab8be' opacity='0.08'/%3E%3Ccircle cx='45' cy='40' r='2.2' fill='%23eab8be' opacity='0.08'/%3E%3Ccircle cx='55' cy='40' r='2.2' fill='%23eab8be' opacity='0.08'/%3E%3Ccircle cx='230' cy='180' r='2' fill='%23f5e6b8' opacity='0.10'/%3E%3Ccircle cx='230' cy='175' r='2' fill='%23c5b5d6' opacity='0.07'/%3E%3Ccircle cx='230' cy='185' r='2' fill='%23c5b5d6' opacity='0.07'/%3E%3Ccircle cx='225' cy='180' r='2' fill='%23c5b5d6' opacity='0.07'/%3E%3Ccircle cx='235' cy='180' r='2' fill='%23c5b5d6' opacity='0.07'/%3E%3C/svg%3E"),
+      /* stars */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250' viewBox='0 0 250 250'%3E%3Cpath d='M120 30L121.5 34L126 34.5L122.5 37L123.5 41L120 39L116.5 41L117.5 37L114 34.5L118.5 34Z' fill='%23f0d58c' opacity='0.10'/%3E%3Cpath d='M40 200L41.5 204L46 204.5L42.5 207L43.5 211L40 209L36.5 211L37.5 207L34 204.5L38.5 204Z' fill='%23f0d58c' opacity='0.08'/%3E%3C/svg%3E"),
+      /* dots */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Ccircle cx='30' cy='90' r='1.5' fill='%23eab8be' opacity='0.08'/%3E%3Ccircle cx='90' cy='30' r='1' fill='%23b5cfe0' opacity='0.08'/%3E%3Ccircle cx='150' cy='120' r='1.5' fill='%23c5b5d6' opacity='0.06'/%3E%3Ccircle cx='60' cy='150' r='1' fill='%239bb8a4' opacity='0.07'/%3E%3Ccircle cx='130' cy='60' r='1.2' fill='%23e8a87c' opacity='0.06'/%3E%3C/svg%3E");
+  }
+
+  /* Subtle cross-hatch pattern for cards */
+  .card-hatch {
+    background-image:
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 8px,
+        rgba(155, 184, 164, 0.03) 8px,
+        rgba(155, 184, 164, 0.03) 9px
+      );
+  }
+
+  /* Diagonal stripe pattern — warm */
+  .stripe-warm {
+    background-image:
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 6px,
+        rgba(234, 184, 190, 0.06) 6px,
+        rgba(234, 184, 190, 0.06) 7px
+      );
+  }
+
+  /* Diagonal stripe pattern — sage */
+  .stripe-sage {
+    background-image:
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 6px,
+        rgba(155, 184, 164, 0.06) 6px,
+        rgba(155, 184, 164, 0.06) 7px
+      );
+  }
+
+  /* Polka dot pattern — tiny and cute */
+  .polka-dot {
+    background-image: radial-gradient(circle, rgba(197, 181, 214, 0.08) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  /* Wavy lines pattern */
+  .wavy-lines {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='20' viewBox='0 0 80 20'%3E%3Cpath d='M0 10 C10 5 20 5 30 10 C40 15 50 15 60 10 C70 5 80 5 80 10' stroke='%239bb8a4' stroke-width='0.5' fill='none' opacity='0.08'/%3E%3C/svg%3E");
+    background-size: 80px 20px;
+  }
+
+  /* Diamond/argyle pattern */
+  .diamond-pattern {
+    background-image:
+      linear-gradient(45deg, rgba(245, 230, 184, 0.06) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(245, 230, 184, 0.06) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(245, 230, 184, 0.06) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(245, 230, 184, 0.06) 75%);
+    background-size: 24px 24px;
+    background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+  }
+
   .dot-grid {
     background-image: radial-gradient(circle, rgba(155, 184, 164, 0.18) 1.5px, transparent 1.5px);
     background-size: 20px 20px;
@@ -53,6 +127,20 @@
   }
 
   /* ── "HIS" dark mode: modern, geometric, sharp ── */
+  .dark .ac-bg {
+    background-color: #030712;
+    background-image: none;
+  }
+
+  .dark .card-hatch,
+  .dark .stripe-warm,
+  .dark .stripe-sage,
+  .dark .polka-dot,
+  .dark .wavy-lines,
+  .dark .diamond-pattern {
+    background-image: none;
+  }
+
   .dark .dot-grid {
     background-image:
       linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),

@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+// In production (Vercel), use the same origin via /api/ai/* serverless functions
+// In development, can use a separate Express server via VITE_API_URL
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 async function post(path, body) {
   const res = await fetch(`${API_BASE}${path}`, {

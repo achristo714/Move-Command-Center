@@ -44,7 +44,7 @@ export default function Layout() {
     <div className={`min-h-screen pb-20 lg:pb-6 ${
       dark
         ? 'bg-gray-950'
-        : 'bg-[#faf6f0]'
+        : 'ac-bg'
     }`}>
       <header className={`sticky top-0 z-40 backdrop-blur-lg border-b ${
         dark

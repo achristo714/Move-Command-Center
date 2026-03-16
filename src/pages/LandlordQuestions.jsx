@@ -120,7 +120,7 @@ export default function LandlordQuestions() {
       </div>
 
       {/* Add new question */}
-      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 space-y-3">
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 space-y-3 card-hatch">
         <div className="flex gap-2">
           <textarea
             value={newText}
