@@ -3,6 +3,7 @@ import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Home, Package, MapPin, Search, Image, Plus, Settings, Moon, Sun, Menu, X, ClipboardList, Calculator, MessageCircle, CheckSquare, ListOrdered } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../hooks/useTheme'
+import { Leaf, SmallFlower, Sparkle } from './Decorations'
 
 const navItems = [
   { to: '/', icon: Home, label: 'Home' },
@@ -55,6 +56,7 @@ export default function Layout() {
             <span className={`font-bold text-lg tracking-tight ${
               dark ? 'text-white' : 'text-[#3d3429]'
             }`}>MoveHQ</span>
+            {!dark && <SmallFlower className="ml-0.5 -mt-1" size={12} color="#eab8be" />}
           </NavLink>
 
           {/* Desktop nav */}

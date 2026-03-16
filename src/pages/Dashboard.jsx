@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom'
-import { Package, AlertTriangle, Star, Truck, Archive, CheckCircle2, Clock, ArrowRight, Calendar, Timer, MessageCircle, ClipboardList, Calculator } from 'lucide-react'
+import { Package, AlertTriangle, Star as StarIcon, Truck, Archive, CheckCircle2, Clock, ArrowRight, Calendar, Timer, MessageCircle, ClipboardList, Calculator } from 'lucide-react'
 import { motion } from 'framer-motion'
 import ProgressRing from '../components/ProgressRing'
 import { useStats, useRooms, useActivityLog, useEssentials } from '../hooks/useStore'
 import { getStatusColor, getStatusLabel, STATUS_OPTIONS } from '../lib/constants'
 import { useTheme } from '../hooks/useTheme'
+import { Flower, Leaf, Bunny, Bird, SmallFlower, TinyHouse, Sparkle, Butterfly, VineDivider } from '../components/Decorations'
 import store from '../lib/store'
 
 function StatCard({ icon: Icon, label, value, color, bgColor, darkBgColor, darkColor }) {
@@ -43,22 +44,34 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Hero / Progress */}
-      <div className={`rounded-3xl p-6 text-center dot-grid glow-warm ${
+      <div className={`rounded-3xl p-6 text-center dot-grid glow-warm relative overflow-hidden ${
         dark
           ? 'bg-gray-900/60 border border-gray-800'
           : 'bg-white border border-[#e8ddd0]/60'
       }`}>
-        <h1 className={`text-lg font-bold mb-1 ${dark ? 'text-white' : 'text-[#3d3429]'}`}>
+        {/* Light mode decorations */}
+        {!dark && (
+          <>
+            <Flower className="absolute top-3 left-4 opacity-60" size={26} />
+            <Leaf className="absolute top-2 right-5 opacity-50 -rotate-12" size={22} />
+            <SmallFlower className="absolute bottom-4 left-6 opacity-40" size={16} color="#b5cfe0" />
+            <Butterfly className="absolute top-6 right-3 opacity-40" size={18} />
+            <Sparkle className="absolute top-12 left-16 opacity-50" size={8} />
+            <Sparkle className="absolute bottom-8 right-14 opacity-40" size={10} />
+          </>
+        )}
+
+        <h1 className={`text-lg font-bold mb-1 relative ${dark ? 'text-white' : 'text-[#3d3429]'}`}>
           {dark ? 'Command Center' : 'Our New Home'}
         </h1>
-        <p className={`text-sm mb-4 ${dark ? 'text-gray-400' : 'text-[#7a6b5d]'}`}>
+        <p className={`text-sm mb-4 relative ${dark ? 'text-gray-400' : 'text-[#7a6b5d]'}`}>
           {stats.total === 0
             ? dark ? "No boxes tracked yet." : "No boxes yet — let's get packing!"
             : stats.unpacked === stats.total
             ? dark ? 'Mission complete. All unpacked.' : 'Welcome home! Everything is unpacked.'
             : `${stats.toUnpack} boxes to go`}
         </p>
-        <div className="flex justify-center">
+        <div className="flex justify-center relative">
           <ProgressRing
             value={stats.unpacked}
             total={stats.total || 1}
@@ -156,16 +169,25 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Vine divider — light mode only */}
+      {!dark && <VineDivider className="my-1" />}
+
       {/* Essentials Kit Progress */}
       <button
         onClick={() => navigate('/essentials')}
-        className={`w-full rounded-2xl border p-4 text-left ${
+        className={`w-full rounded-2xl border p-4 text-left relative overflow-hidden ${
           dark
             ? 'bg-amber-500/5 border-amber-500/20'
             : 'bg-gradient-to-r from-[#faf0e4] to-[#f5e6d0] border-[#e8d5be]'
         }`}
       >
-        <div className="flex items-center justify-between">
+        {!dark && (
+          <>
+            <Bunny className="absolute -right-1 -bottom-1 opacity-30" size={36} />
+            <Sparkle className="absolute top-2 right-16 opacity-40" size={10} />
+          </>
+        )}
+        <div className="flex items-center justify-between relative">
           <div>
             <h2 className={`font-semibold ${dark ? 'text-white' : 'text-[#3d3429]'}`}>Essentials Kit</h2>
             <p className={`text-sm mt-0.5 ${dark ? 'text-gray-400' : 'text-[#b0a090]'}`}>
@@ -185,7 +207,7 @@ export default function Dashboard() {
           { to: '/unpack', icon: CheckCircle2, label: 'Unpacking Queue', sub: `${stats.toUnpack} remaining`, iconColor: dark ? 'text-emerald-400' : 'text-[#95c9a8]' },
           { to: '/labels', icon: Package, label: 'Print Labels', sub: 'QR codes for boxes', iconColor: dark ? 'text-indigo-400' : 'text-[#9bb8a4]' },
           { to: '/print/movers', icon: Truck, label: 'Mover Sheet', sub: 'Print for movers', iconColor: dark ? 'text-amber-400' : 'text-[#c4935a]' },
-          { to: '/essentials', icon: Star, label: 'Essentials', sub: 'First night kit', iconColor: dark ? 'text-yellow-400' : 'text-[#c4a03a]' },
+          { to: '/essentials', icon: StarIcon, label: 'Essentials', sub: 'First night kit', iconColor: dark ? 'text-yellow-400' : 'text-[#c4a03a]' },
           { to: '/landlord', icon: MessageCircle, label: 'Landlord Q\'s', sub: 'Questions & requests', iconColor: dark ? 'text-purple-400' : 'text-[#b8a9c9]' },
           { to: '/checklist', icon: ClipboardList, label: 'Move-In Checklist', sub: 'Utilities, address, setup', iconColor: dark ? 'text-cyan-400' : 'text-[#8bb8a8]' },
           { to: '/estimate', icon: Calculator, label: 'Moving Estimate', sub: 'Box counts & furniture', iconColor: dark ? 'text-lime-400' : 'text-[#7da88a]' },
@@ -205,6 +227,9 @@ export default function Dashboard() {
           </button>
         ))}
       </div>
+
+      {/* Another vine divider */}
+      {!dark && <VineDivider className="my-1" />}
 
       {/* Countdown + Packing Schedule */}
       <PackingSchedule rooms={rooms} store={store} dark={dark} />
@@ -260,10 +285,17 @@ function PackingSchedule({ rooms, store, dark }) {
   const currentPhase = getPhaseForDays(daysLeft)
 
   return (
-    <div className={`rounded-2xl p-4 ${
+    <div className={`rounded-2xl p-4 relative overflow-hidden ${
       dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
     }`}>
-      <div className="flex items-center justify-between mb-4">
+      {!dark && (
+        <>
+          <Bird className="absolute top-3 right-4 opacity-40" size={24} />
+          <TinyHouse className="absolute bottom-3 right-3 opacity-20" size={28} />
+          <SmallFlower className="absolute bottom-5 right-10 opacity-30" size={12} />
+        </>
+      )}
+      <div className="flex items-center justify-between mb-4 relative">
         <h2 className={`font-semibold flex items-center gap-2 ${dark ? 'text-white' : 'text-[#3d3429]'}`}>
           <Calendar className={`w-4 h-4 ${dark ? 'text-indigo-400' : 'text-[#9bb8a4]'}`} />
           Packing Schedule
