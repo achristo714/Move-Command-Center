@@ -39,23 +39,17 @@ export function SmallFlower({ className = '', size = 14, color = '#c5b5d6' }) {
 export function Bunny({ className = '', size = 28 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className}>
-      {/* Ears */}
       <ellipse cx="11" cy="7" rx="3" ry="6" fill="#f0e8de" stroke="#d4c8ba" strokeWidth="0.5" />
       <ellipse cx="21" cy="7" rx="3" ry="6" fill="#f0e8de" stroke="#d4c8ba" strokeWidth="0.5" />
       <ellipse cx="11" cy="6.5" rx="1.5" ry="4" fill="#eab8be" opacity="0.4" />
       <ellipse cx="21" cy="6.5" rx="1.5" ry="4" fill="#eab8be" opacity="0.4" />
-      {/* Head */}
       <circle cx="16" cy="17" r="8" fill="#f0e8de" stroke="#d4c8ba" strokeWidth="0.5" />
-      {/* Eyes */}
       <circle cx="13" cy="16" r="1.2" fill="#5a4e42" />
       <circle cx="19" cy="16" r="1.2" fill="#5a4e42" />
       <circle cx="13.4" cy="15.5" r="0.4" fill="white" />
       <circle cx="19.4" cy="15.5" r="0.4" fill="white" />
-      {/* Nose */}
       <ellipse cx="16" cy="18.5" rx="1" ry="0.7" fill="#eab8be" />
-      {/* Mouth */}
       <path d="M15 19.5 Q16 20.5 17 19.5" stroke="#d4c8ba" strokeWidth="0.5" fill="none" />
-      {/* Cheeks */}
       <circle cx="10.5" cy="18" r="1.5" fill="#eab8be" opacity="0.25" />
       <circle cx="21.5" cy="18" r="1.5" fill="#eab8be" opacity="0.25" />
     </svg>
@@ -65,18 +59,12 @@ export function Bunny({ className = '', size = 28 }) {
 export function Bird({ className = '', size = 22 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-      {/* Body */}
       <ellipse cx="12" cy="14" rx="6" ry="5" fill="#b5cfe0" opacity="0.8" />
-      {/* Head */}
       <circle cx="16" cy="10" r="3.5" fill="#b5cfe0" opacity="0.9" />
-      {/* Eye */}
       <circle cx="17.2" cy="9.5" r="0.8" fill="#3d3429" />
       <circle cx="17.5" cy="9.2" r="0.25" fill="white" />
-      {/* Beak */}
       <path d="M19.5 10 L22 9.5 L19.5 11Z" fill="#e8a87c" />
-      {/* Wing */}
       <ellipse cx="10" cy="13.5" rx="4" ry="2.5" fill="#8fb8d0" opacity="0.6" transform="rotate(-10 10 13.5)" />
-      {/* Cheek */}
       <circle cx="15.5" cy="11" r="1" fill="#eab8be" opacity="0.3" />
     </svg>
   )
@@ -93,16 +81,11 @@ export function Star({ className = '', size = 12, color = '#f5e6b8' }) {
 export function TinyHouse({ className = '', size = 24 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 28 28" fill="none" className={className}>
-      {/* Roof */}
       <path d="M14 3L3 13H25L14 3Z" fill="#e8a87c" opacity="0.7" />
-      {/* Walls */}
       <rect x="6" y="13" width="16" height="12" rx="1" fill="#f5ede3" stroke="#d4c8ba" strokeWidth="0.5" />
-      {/* Door */}
       <rect x="12" y="18" width="4" height="7" rx="1" fill="#9bb8a4" opacity="0.6" />
       <circle cx="14.8" cy="22" r="0.5" fill="#7a6b5d" />
-      {/* Window */}
       <rect x="8" y="15.5" width="3" height="3" rx="0.5" fill="#b5cfe0" opacity="0.5" stroke="#d4c8ba" strokeWidth="0.3" />
-      {/* Chimney */}
       <rect x="19" y="6" width="2.5" height="7" fill="#d4c8ba" opacity="0.6" />
     </svg>
   )
@@ -119,15 +102,11 @@ export function Sparkle({ className = '', size = 10, color = '#f0d58c' }) {
 export function Butterfly({ className = '', size = 20 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-      {/* Left wings */}
       <ellipse cx="8" cy="9" rx="5" ry="4" fill="#c5b5d6" opacity="0.5" transform="rotate(-15 8 9)" />
       <ellipse cx="8" cy="15" rx="3.5" ry="3" fill="#eab8be" opacity="0.4" transform="rotate(10 8 15)" />
-      {/* Right wings */}
       <ellipse cx="16" cy="9" rx="5" ry="4" fill="#c5b5d6" opacity="0.5" transform="rotate(15 16 9)" />
       <ellipse cx="16" cy="15" rx="3.5" ry="3" fill="#eab8be" opacity="0.4" transform="rotate(-10 16 15)" />
-      {/* Body */}
       <ellipse cx="12" cy="12" rx="1" ry="5" fill="#8a7e72" opacity="0.5" />
-      {/* Antennae */}
       <path d="M12 7 Q10 3 8 2" stroke="#8a7e72" strokeWidth="0.5" fill="none" opacity="0.4" />
       <path d="M12 7 Q14 3 16 2" stroke="#8a7e72" strokeWidth="0.5" fill="none" opacity="0.4" />
       <circle cx="8" cy="2" r="0.7" fill="#c5b5d6" opacity="0.5" />
@@ -136,19 +115,97 @@ export function Butterfly({ className = '', size = 20 }) {
   )
 }
 
-// A decorative vine/branch divider
-export function VineDivider({ className = '' }) {
+// Wavy scalloped divider — Animal Crossing style
+export function WavyDivider({ className = '' }) {
   return (
-    <svg width="100%" height="16" viewBox="0 0 200 16" fill="none" className={className} preserveAspectRatio="none">
-      <path d="M0 8 Q25 2 50 8 T100 8 T150 8 T200 8" stroke="#9bb8a4" strokeWidth="1" fill="none" opacity="0.3" />
-      <circle cx="30" cy="5" r="2" fill="#eab8be" opacity="0.4" />
-      <circle cx="80" cy="10" r="1.5" fill="#c5b5d6" opacity="0.3" />
-      <circle cx="130" cy="4" r="2" fill="#f5e6b8" opacity="0.4" />
-      <circle cx="170" cy="11" r="1.5" fill="#eab8be" opacity="0.3" />
-      {/* Tiny leaves */}
-      <path d="M50 8 Q48 5 52 6" fill="#9bb8a4" opacity="0.4" />
-      <path d="M100 8 Q98 11 102 10" fill="#9bb8a4" opacity="0.4" />
-      <path d="M150 8 Q148 5 152 6" fill="#9bb8a4" opacity="0.4" />
-    </svg>
+    <div className={`relative py-2 ${className}`}>
+      <svg width="100%" height="20" viewBox="0 0 400 20" preserveAspectRatio="none" className="block">
+        <path
+          d="M0 10 C20 0, 40 0, 60 10 C80 20, 100 20, 120 10 C140 0, 160 0, 180 10 C200 20, 220 20, 240 10 C260 0, 280 0, 300 10 C320 20, 340 20, 360 10 C380 0, 400 0, 400 10"
+          stroke="#c5d9cb"
+          strokeWidth="2.5"
+          fill="none"
+          opacity="0.6"
+        />
+      </svg>
+      {/* Tiny scattered shapes along the divider */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 20" preserveAspectRatio="none">
+        <circle cx="50" cy="5" r="2.5" fill="#eab8be" opacity="0.5" />
+        <circle cx="150" cy="15" r="2" fill="#c5b5d6" opacity="0.5" />
+        <circle cx="250" cy="4" r="2.5" fill="#f5e6b8" opacity="0.6" />
+        <circle cx="350" cy="16" r="2" fill="#b5cfe0" opacity="0.5" />
+        {/* tiny leaf shapes */}
+        <path d="M100 8 Q97 4 103 6" fill="#9bb8a4" opacity="0.5" />
+        <path d="M200 12 Q197 16 203 14" fill="#9bb8a4" opacity="0.5" />
+        <path d="M300 8 Q297 4 303 6" fill="#9bb8a4" opacity="0.5" />
+      </svg>
+    </div>
+  )
+}
+
+// Keep old name for backwards compatibility
+export const VineDivider = WavyDivider
+
+// Scattered icons pattern overlay for backgrounds
+export function ScatteredPattern({ className = '' }) {
+  return (
+    <div className={`absolute inset-0 pointer-events-none overflow-hidden ${className}`}>
+      <svg className="absolute w-full h-full" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice">
+        {/* Flowers */}
+        <g opacity="0.12">
+          <circle cx="45" cy="30" r="3" fill="#f5e6b8" />
+          <circle cx="45" cy="23" r="3" fill="#eab8be" />
+          <circle cx="45" cy="37" r="3" fill="#eab8be" />
+          <circle cx="38" cy="30" r="3" fill="#eab8be" />
+          <circle cx="52" cy="30" r="3" fill="#eab8be" />
+        </g>
+        <g opacity="0.10">
+          <circle cx="320" cy="70" r="2.5" fill="#f5e6b8" />
+          <circle cx="320" cy="64" r="2.5" fill="#c5b5d6" />
+          <circle cx="320" cy="76" r="2.5" fill="#c5b5d6" />
+          <circle cx="314" cy="70" r="2.5" fill="#c5b5d6" />
+          <circle cx="326" cy="70" r="2.5" fill="#c5b5d6" />
+        </g>
+
+        {/* Leaves */}
+        <path d="M180 50 Q175 42 185 45" fill="#9bb8a4" opacity="0.15" />
+        <path d="M280 150 Q275 142 285 145" fill="#9bb8a4" opacity="0.12" />
+        <path d="M60 200 Q55 192 65 195" fill="#9bb8a4" opacity="0.14" />
+        <path d="M350 280 Q345 272 355 275" fill="#9bb8a4" opacity="0.10" />
+        <path d="M120 340 Q115 332 125 335" fill="#9bb8a4" opacity="0.13" />
+
+        {/* Stars */}
+        <path d="M100 100L101.5 104L106 104.5L102.5 107L103.5 111L100 109L96.5 111L97.5 107L94 104.5L98.5 104Z" fill="#f0d58c" opacity="0.15" />
+        <path d="M250 220L251.5 224L256 224.5L252.5 227L253.5 231L250 229L246.5 231L247.5 227L244 224.5L248.5 224Z" fill="#f0d58c" opacity="0.12" />
+        <path d="M370 350L371.5 354L376 354.5L372.5 357L373.5 361L370 359L366.5 361L367.5 357L364 354.5L368.5 354Z" fill="#f0d58c" opacity="0.10" />
+
+        {/* Tiny triangles (trees) */}
+        <path d="M200 300L195 310L205 310Z" fill="#9bb8a4" opacity="0.08" />
+        <path d="M50 350L45 360L55 360Z" fill="#9bb8a4" opacity="0.08" />
+
+        {/* Circles (berries/fruits) */}
+        <circle cx="300" cy="30" r="3" fill="#eab8be" opacity="0.10" />
+        <circle cx="150" cy="180" r="2.5" fill="#e8a87c" opacity="0.10" />
+        <circle cx="380" cy="180" r="3" fill="#c5b5d6" opacity="0.08" />
+        <circle cx="30" cy="120" r="2" fill="#b5cfe0" opacity="0.10" />
+        <circle cx="220" cy="380" r="2.5" fill="#eab8be" opacity="0.10" />
+
+        {/* Music notes (AC vibe) */}
+        <g opacity="0.08">
+          <circle cx="160" cy="120" r="2.5" fill="#c5b5d6" />
+          <rect x="162" y="108" width="1" height="14" fill="#c5b5d6" />
+          <circle cx="170" cy="115" r="2.5" fill="#c5b5d6" />
+          <rect x="172" y="103" width="1" height="14" fill="#c5b5d6" />
+          <rect x="162" y="108" width="11" height="1.5" fill="#c5b5d6" rx="0.5" />
+        </g>
+
+        {/* Footprints */}
+        <g opacity="0.06" transform="rotate(30, 340, 130)">
+          <ellipse cx="337" cy="128" rx="2" ry="3" fill="#d4c8ba" />
+          <ellipse cx="343" cy="128" rx="2" ry="3" fill="#d4c8ba" />
+          <ellipse cx="340" cy="134" rx="3.5" ry="4.5" fill="#d4c8ba" />
+        </g>
+      </svg>
+    </div>
   )
 }

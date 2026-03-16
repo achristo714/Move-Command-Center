@@ -3,7 +3,7 @@ import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Home, Package, MapPin, Search, Image, Plus, Settings, Moon, Sun, Menu, X, ClipboardList, Calculator, MessageCircle, CheckSquare, ListOrdered } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../hooks/useTheme'
-import { Leaf, SmallFlower, Sparkle } from './Decorations'
+import { SmallFlower } from './Decorations'
 
 const navItems = [
   { to: '/', icon: Home, label: 'Home' },
@@ -12,14 +12,21 @@ const navItems = [
   { to: '/search', icon: Search, label: 'Search' },
 ]
 
+// Desktop nav includes these extra items with short labels
+const desktopExtraItems = [
+  { to: '/checklist', icon: ClipboardList, label: 'Checklist' },
+  { to: '/estimate', icon: Calculator, label: 'Estimate' },
+  { to: '/landlord', icon: MessageCircle, label: "LL Q's" },
+]
+
 const moreItems = [
-  { to: '/checklist', icon: ClipboardList, label: 'Move-In Checklist', desc: 'Utilities, address updates, setup tasks' },
-  { to: '/estimate', icon: Calculator, label: 'Moving Estimate', desc: 'Box counts & furniture for movers' },
-  { to: '/landlord', icon: MessageCircle, label: 'Landlord Q\'s', desc: 'Questions & requests' },
-  { to: '/essentials', icon: CheckSquare, label: 'First Night Essentials', desc: 'Must-haves for day one' },
-  { to: '/unpack', icon: ListOrdered, label: 'Unpacking Queue', desc: 'Priority unpack order' },
-  { to: '/photos', icon: Image, label: 'Photo Feed', desc: 'All box photos' },
-  { to: '/settings', icon: Settings, label: 'Settings', desc: 'Rooms, estimates, export data' },
+  { to: '/checklist', icon: ClipboardList, label: 'Checklist', desc: 'Utilities, address updates, setup tasks', iconBg: 'bg-rose-100 dark:bg-rose-500/10', iconColor: 'text-rose-600 dark:text-rose-400' },
+  { to: '/estimate', icon: Calculator, label: 'Estimate', desc: 'Box counts & furniture for movers', iconBg: 'bg-teal-100 dark:bg-teal-500/10', iconColor: 'text-teal-600 dark:text-teal-400' },
+  { to: '/landlord', icon: MessageCircle, label: "Landlord Q's", desc: 'Questions & requests', iconBg: 'bg-purple-100 dark:bg-purple-500/10', iconColor: 'text-purple-600 dark:text-purple-400' },
+  { to: '/essentials', icon: CheckSquare, label: 'Essentials', desc: 'Must-haves for day one', iconBg: 'bg-yellow-100 dark:bg-yellow-500/10', iconColor: 'text-yellow-600 dark:text-yellow-400' },
+  { to: '/unpack', icon: ListOrdered, label: 'Unpack Queue', desc: 'Priority unpack order', iconBg: 'bg-emerald-100 dark:bg-emerald-500/10', iconColor: 'text-emerald-600 dark:text-emerald-400' },
+  { to: '/photos', icon: Image, label: 'Photos', desc: 'All box photos', iconBg: 'bg-pink-100 dark:bg-pink-500/10', iconColor: 'text-pink-600 dark:text-pink-400' },
+  { to: '/settings', icon: Settings, label: 'Settings', desc: 'Rooms, estimates, export data', iconBg: 'bg-gray-100 dark:bg-gray-500/10', iconColor: 'text-gray-600 dark:text-gray-400' },
 ]
 
 export default function Layout() {
@@ -36,8 +43,8 @@ export default function Layout() {
   return (
     <div className={`min-h-screen pb-20 lg:pb-6 ${
       dark
-        ? 'bg-gray-950'                    /* HIS: deep dark */
-        : 'bg-[#faf6f0]'                   /* HERS: warm cream */
+        ? 'bg-gray-950'
+        : 'bg-[#faf6f0]'
     }`}>
       <header className={`sticky top-0 z-40 backdrop-blur-lg border-b ${
         dark
@@ -61,7 +68,7 @@ export default function Layout() {
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-1">
-            {[...navItems, ...moreItems.slice(0, 3)].map(({ to, icon: Icon, label }) => (
+            {[...navItems, ...desktopExtraItems].map(({ to, icon: Icon, label }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -154,7 +161,7 @@ export default function Layout() {
                   </button>
                 </div>
                 <div className="space-y-1">
-                  {moreItems.map(({ to, icon: Icon, label, desc }) => (
+                  {moreItems.map(({ to, icon: Icon, label, desc, iconBg, iconColor }) => (
                     <NavLink
                       key={to}
                       to={to}
@@ -167,10 +174,8 @@ export default function Layout() {
                         }`
                       }
                     >
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                        dark ? 'bg-gray-800' : 'bg-[#f0ebe4]'
-                      }`}>
-                        <Icon className={`w-4.5 h-4.5 ${dark ? 'text-indigo-400' : 'text-[#9bb8a4]'}`} />
+                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${iconBg}`}>
+                        <Icon className={`w-5 h-5 ${iconColor}`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className={`text-sm font-medium ${dark ? 'text-white' : 'text-[#3d3429]'}`}>{label}</div>

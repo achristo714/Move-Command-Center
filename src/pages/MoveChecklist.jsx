@@ -91,14 +91,16 @@ export default function MoveChecklist() {
   const [editingId, setEditingId] = useState(null)
   const [editText, setEditText] = useState('')
 
-  // Seed defaults on first visit
+  // Seed defaults on first visit (batch to avoid animation churn)
+  const [seeded, setSeeded] = useState(false)
   useEffect(() => {
-    if (checklist.length === 0) {
-      DEFAULT_ITEMS.forEach((item, i) => {
-        const entry = store.addChecklistItem(item.text, item.category)
+    if (checklist.length === 0 && !seeded) {
+      setSeeded(true)
+      DEFAULT_ITEMS.forEach((item) => {
+        store.addChecklistItem(item.text, item.category)
       })
     }
-  }, [])
+  }, []) // eslint-disable-line
 
   const handleAdd = () => {
     if (!newText.trim()) return
@@ -258,8 +260,8 @@ export default function MoveChecklist() {
               {items.map(item => (
                 <motion.div
                   key={item.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={false}
+                  animate={{ opacity: 1 }}
                   exit={{ opacity: 0, x: -80 }}
                   className={`bg-white dark:bg-slate-800/50 rounded-lg border p-3 flex items-center gap-3 ${
                     item.is_done
