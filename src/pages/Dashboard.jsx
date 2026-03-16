@@ -13,8 +13,8 @@ function StatCard({ icon: Icon, label, value, color, bgColor, darkBgColor, darkC
       <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${bgColor} ${darkBgColor}`}>
         <Icon className={`w-4 h-4 ${color} ${darkColor}`} />
       </div>
-      <div className="text-2xl font-bold text-[#5a4e42] dark:text-white">{value}</div>
-      <div className="text-xs text-[#b0a090] dark:text-gray-500">{label}</div>
+      <div className="text-2xl font-bold text-[#3d3429] dark:text-white">{value}</div>
+      <div className="text-xs text-[#8a7e72] dark:text-gray-500">{label}</div>
     </div>
   )
 }
@@ -48,10 +48,10 @@ export default function Dashboard() {
           ? 'bg-gray-900/60 border border-gray-800'
           : 'bg-white border border-[#e8ddd0]/60'
       }`}>
-        <h1 className={`text-lg font-bold mb-1 ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>
+        <h1 className={`text-lg font-bold mb-1 ${dark ? 'text-white' : 'text-[#3d3429]'}`}>
           {dark ? 'Command Center' : 'Our New Home'}
         </h1>
-        <p className={`text-sm mb-4 ${dark ? 'text-gray-400' : 'text-[#b0a090]'}`}>
+        <p className={`text-sm mb-4 ${dark ? 'text-gray-400' : 'text-[#7a6b5d]'}`}>
           {stats.total === 0
             ? dark ? "No boxes tracked yet." : "No boxes yet — let's get packing!"
             : stats.unpacked === stats.total
@@ -67,10 +67,10 @@ export default function Dashboard() {
             color={progressColor}
           >
             <div className="text-center">
-              <div className={`text-3xl font-bold ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>
+              <div className={`text-3xl font-bold ${dark ? 'text-white' : 'text-[#3d3429]'}`}>
                 {stats.total > 0 ? Math.round((stats.unpacked / stats.total) * 100) : 0}%
               </div>
-              <div className={`text-xs ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>unpacked</div>
+              <div className={`text-xs ${dark ? 'text-gray-500' : 'text-[#7a6b5d]'}`}>unpacked</div>
             </div>
           </ProgressRing>
         </div>
@@ -89,7 +89,7 @@ export default function Dashboard() {
         <div className={`rounded-2xl p-4 ${
           dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
         }`}>
-          <h2 className={`font-semibold mb-3 ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>Status Breakdown</h2>
+          <h2 className={`font-semibold mb-3 ${dark ? 'text-white' : 'text-[#3d3429]'}`}>Status Breakdown</h2>
           <div className="space-y-2">
             {STATUS_OPTIONS.map(({ value, label }) => {
               const count = stats.byStatus[value] || 0
@@ -98,7 +98,7 @@ export default function Dashboard() {
               return (
                 <div key={value} className="flex items-center gap-3">
                   <Icon className="w-4 h-4 flex-shrink-0" style={{ color: getStatusColor(value) }} />
-                  <span className={`text-sm w-20 ${dark ? 'text-gray-300' : 'text-[#7a6b5d]'}`}>{label}</span>
+                  <span className={`text-sm w-20 ${dark ? 'text-gray-300' : 'text-[#5a4e42]'}`}>{label}</span>
                   <div className={`flex-1 h-6 rounded-full overflow-hidden ${dark ? 'bg-gray-800' : 'bg-[#f0ebe4]'}`}>
                     <motion.div
                       className="h-full rounded-full"
@@ -120,7 +120,7 @@ export default function Dashboard() {
           dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
         }`}>
           <div className="flex items-center justify-between mb-3">
-            <h2 className={`font-semibold ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>Rooms</h2>
+            <h2 className={`font-semibold ${dark ? 'text-white' : 'text-[#3d3429]'}`}>Rooms</h2>
             <button
               onClick={() => navigate('/rooms')}
               className={`text-sm font-medium ${dark ? 'text-indigo-400' : 'text-[#7da88a]'}`}
@@ -142,7 +142,7 @@ export default function Dashboard() {
                 >
                   <span className={`text-sm ${dark ? 'text-gray-300' : 'text-[#5a4e42]'}`}>{room.name}</span>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>
+                    <span className={`text-xs ${dark ? 'text-gray-500' : 'text-[#8a7e72]'}`}>
                       {roomUnpacked}/{roomBoxes.length} unpacked
                     </span>
                     {roomBoxes.length > 0 && roomUnpacked === roomBoxes.length && (
@@ -167,14 +167,14 @@ export default function Dashboard() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className={`font-semibold ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>Essentials Kit</h2>
+            <h2 className={`font-semibold ${dark ? 'text-white' : 'text-[#3d3429]'}`}>Essentials Kit</h2>
             <p className={`text-sm mt-0.5 ${dark ? 'text-gray-400' : 'text-[#b0a090]'}`}>
               {essentialsPacked} of {essentialsTotal} items packed
             </p>
           </div>
           <div className="flex items-center gap-2">
             <ProgressRing value={essentialsPacked} total={essentialsTotal || 1} size={48} strokeWidth={4} color={dark ? '#f59e0b' : '#d4a166'} />
-            <ArrowRight className={`w-4 h-4 ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`} />
+            <ArrowRight className={`w-4 h-4 ${dark ? 'text-gray-500' : 'text-[#8a7e72]'}`} />
           </div>
         </div>
       </button>
@@ -200,8 +200,8 @@ export default function Dashboard() {
             }`}
           >
             <Icon className={`w-5 h-5 mb-2 ${iconColor}`} />
-            <div className={`font-medium text-sm ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>{label}</div>
-            <div className={`text-xs mt-0.5 ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>{sub}</div>
+            <div className={`font-medium text-sm ${dark ? 'text-white' : 'text-[#3d3429]'}`}>{label}</div>
+            <div className={`text-xs mt-0.5 ${dark ? 'text-gray-500' : 'text-[#8a7e72]'}`}>{sub}</div>
           </button>
         ))}
       </div>
@@ -214,7 +214,7 @@ export default function Dashboard() {
         <div className={`rounded-2xl p-4 ${
           dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
         }`}>
-          <h2 className={`font-semibold mb-3 ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>Recent Activity</h2>
+          <h2 className={`font-semibold mb-3 ${dark ? 'text-white' : 'text-[#3d3429]'}`}>Recent Activity</h2>
           <div className="space-y-2">
             {activity.slice(0, 5).map(entry => {
               const box = store.getBox(entry.box_id)
@@ -222,11 +222,11 @@ export default function Dashboard() {
               return (
                 <div key={entry.id} className="flex items-center gap-2 text-sm">
                   <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dark ? 'bg-indigo-400' : 'bg-[#9bb8a4]'}`} />
-                  <span className={dark ? 'text-gray-300' : 'text-[#7a6b5d]'}>
+                  <span className={dark ? 'text-gray-300' : 'text-[#5a4e42]'}>
                     {entry.action === 'created' && `Box #${entry.details?.box_number} packed`}
                     {entry.action === 'status_changed' && `Box #${box?.box_number || '?'} → ${getStatusLabel(entry.details?.status)}`}
                   </span>
-                  <span className={`ml-auto text-xs ${dark ? 'text-gray-600' : 'text-[#c4b5a2]'}`}>{timeAgo}</span>
+                  <span className={`ml-auto text-xs ${dark ? 'text-gray-600' : 'text-[#8a7e72]'}`}>{timeAgo}</span>
                 </div>
               )
             })}
@@ -264,7 +264,7 @@ function PackingSchedule({ rooms, store, dark }) {
       dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
     }`}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className={`font-semibold flex items-center gap-2 ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>
+        <h2 className={`font-semibold flex items-center gap-2 ${dark ? 'text-white' : 'text-[#3d3429]'}`}>
           <Calendar className={`w-4 h-4 ${dark ? 'text-indigo-400' : 'text-[#9bb8a4]'}`} />
           Packing Schedule
         </h2>
@@ -277,7 +277,7 @@ function PackingSchedule({ rooms, store, dark }) {
         </div>
       </div>
 
-      <div className={`text-xs mb-3 ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>
+      <div className={`text-xs mb-3 ${dark ? 'text-gray-500' : 'text-[#8a7e72]'}`}>
         Move day: May 1, 2026 · ~{weeksLeft} weeks left
       </div>
 
@@ -315,7 +315,7 @@ function PackingSchedule({ rooms, store, dark }) {
                       ? dark ? 'text-indigo-400' : 'text-[#4a7c5c]'
                       : isPast
                       ? dark ? 'text-emerald-400' : 'text-[#6a9b7a]'
-                      : dark ? 'text-gray-400' : 'text-[#8a7e72]'
+                      : dark ? 'text-gray-400' : 'text-[#6b5f53]'
                   }`}>
                     {phase.week}
                   </span>
@@ -325,16 +325,16 @@ function PackingSchedule({ rooms, store, dark }) {
                     }`}>NOW</span>
                   )}
                 </div>
-                {packedCount > 0 && <span className={`text-xs ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>{packedCount} packed</span>}
+                {packedCount > 0 && <span className={`text-xs ${dark ? 'text-gray-500' : 'text-[#8a7e72]'}`}>{packedCount} packed</span>}
               </div>
               <div className="flex flex-wrap gap-1 mb-1">
                 {phase.rooms.map(r => (
                   <span key={r} className={`text-xs px-2 py-0.5 rounded-full ${
-                    dark ? 'bg-gray-800 text-gray-400' : 'bg-[#f0ebe4] text-[#8a7e72]'
+                    dark ? 'bg-gray-800 text-gray-400' : 'bg-[#ede5db] text-[#5a4e42]'
                   }`}>{r}</span>
                 ))}
               </div>
-              <p className={`text-xs ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>{phase.tip}</p>
+              <p className={`text-xs ${dark ? 'text-gray-500' : 'text-[#8a7e72]'}`}>{phase.tip}</p>
             </div>
           )
         })}

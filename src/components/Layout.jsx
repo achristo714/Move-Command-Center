@@ -53,7 +53,7 @@ export default function Layout() {
               <Package className="w-5 h-5 text-white" />
             </div>
             <span className={`font-bold text-lg tracking-tight ${
-              dark ? 'text-white' : 'text-[#5a4e42]'
+              dark ? 'text-white' : 'text-[#3d3429]'
             }`}>MoveHQ</span>
           </NavLink>
 
@@ -71,7 +71,7 @@ export default function Layout() {
                         : 'bg-[#d4e4d9] text-[#4a7c5c]'
                       : dark
                         ? 'text-gray-400 hover:bg-gray-800/60'
-                        : 'text-[#8a7e72] hover:bg-[#f0e8de]'
+                        : 'text-[#6b5f53] hover:bg-[#f0e8de]'
                   }`
                 }
               >
@@ -87,7 +87,7 @@ export default function Layout() {
               className={`p-2 rounded-lg transition-colors ${
                 dark
                   ? 'text-gray-400 hover:text-yellow-300 hover:bg-gray-800'
-                  : 'text-[#b0a090] hover:text-[#7a6b5d] hover:bg-[#f0e8de]'
+                  : 'text-[#7a6b5d] hover:text-[#7a6b5d] hover:bg-[#f0e8de]'
               }`}
               title={dark ? 'Switch to Hers' : 'Switch to His'}
             >
@@ -146,8 +146,8 @@ export default function Layout() {
                   dark ? 'bg-gray-700' : 'bg-[#e0d5c8]'
                 }`} />
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className={`font-bold ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>More</h2>
-                  <button onClick={() => setMoreOpen(false)} className={dark ? 'p-1 text-gray-500' : 'p-1 text-[#b0a090]'}>
+                  <h2 className={`font-bold ${dark ? 'text-white' : 'text-[#3d3429]'}`}>More</h2>
+                  <button onClick={() => setMoreOpen(false)} className={dark ? 'p-1 text-gray-500' : 'p-1 text-[#7a6b5d]'}>
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -171,8 +171,8 @@ export default function Layout() {
                         <Icon className={`w-4.5 h-4.5 ${dark ? 'text-indigo-400' : 'text-[#9bb8a4]'}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className={`text-sm font-medium ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>{label}</div>
-                        <div className={`text-xs truncate ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>{desc}</div>
+                        <div className={`text-sm font-medium ${dark ? 'text-white' : 'text-[#3d3429]'}`}>{label}</div>
+                        <div className={`text-xs truncate ${dark ? 'text-gray-500' : 'text-[#7a6b5d]'}`}>{desc}</div>
                       </div>
                     </NavLink>
                   ))}
@@ -198,7 +198,7 @@ export default function Layout() {
                 `flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
                   isActive
                     ? dark ? 'text-indigo-400' : 'text-[#7da88a]'
-                    : dark ? 'text-gray-500 active:text-gray-300' : 'text-[#b0a090] active:text-[#8a7e72]'
+                    : dark ? 'text-gray-500 active:text-gray-300' : 'text-[#7a6b5d] active:text-[#6b5f53]'
                 }`
               }
             >
@@ -211,7 +211,7 @@ export default function Layout() {
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
               moreOpen
                 ? dark ? 'text-indigo-400' : 'text-[#7da88a]'
-                : dark ? 'text-gray-500 active:text-gray-300' : 'text-[#b0a090] active:text-[#8a7e72]'
+                : dark ? 'text-gray-500 active:text-gray-300' : 'text-[#7a6b5d] active:text-[#6b5f53]'
             }`}
           >
             <Menu className="w-5 h-5" />

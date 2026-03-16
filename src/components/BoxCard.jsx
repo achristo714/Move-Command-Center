@@ -48,24 +48,24 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
         )}
 
         <div className="flex-shrink-0 w-10 h-10 bg-[#f0ebe4] dark:bg-gray-800 rounded-xl flex items-center justify-center">
-          <Package className="w-5 h-5 text-[#b0a090] dark:text-gray-500" />
+          <Package className="w-5 h-5 text-[#8a7e72] dark:text-gray-500" />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-[#5a4e42] dark:text-white">#{box.box_number}</span>
+            <span className="font-semibold text-[#3d3429] dark:text-white">#{box.box_number}</span>
             {box.label && (
-              <span className="text-sm text-[#8a7e72] dark:text-gray-400 truncate">{box.label}</span>
+              <span className="text-sm text-[#6b5f53] dark:text-gray-400 truncate">{box.label}</span>
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <StatusBadge status={box.status} />
             {room && (
-              <span className="text-xs text-[#b0a090] dark:text-gray-500 truncate">{room.name}</span>
+              <span className="text-xs text-[#8a7e72] dark:text-gray-500 truncate">{room.name}</span>
             )}
           </div>
           {(box.ai_summary || box.manual_contents) && (
-            <p className="text-xs text-[#b0a090] dark:text-gray-500 mt-1 truncate">
+            <p className="text-xs text-[#8a7e72] dark:text-gray-500 mt-1 truncate">
               {box.manual_contents || box.ai_summary}
             </p>
           )}
@@ -84,7 +84,7 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
               className="ml-1 p-1.5 rounded-full bg-[#f0ebe4] dark:bg-gray-800 active:bg-[#e8ddd0] dark:active:bg-gray-700 transition-colors"
               title={`Mark as ${getStatusLabel(nextStatuses[0])}`}
             >
-              <ArrowRight className="w-4 h-4 text-[#8a7e72] dark:text-gray-400" />
+              <ArrowRight className="w-4 h-4 text-[#6b5f53] dark:text-gray-400" />
             </button>
           ) : (
             <ChevronRight className="w-4 h-4 text-[#d4c8ba] dark:text-gray-600 ml-1" />
