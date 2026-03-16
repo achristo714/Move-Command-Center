@@ -254,11 +254,10 @@ export default function MoveChecklist() {
               </div>
             </div>
 
-            <AnimatePresence>
+            <AnimatePresence initial={false}>
               {items.map(item => (
                 <motion.div
                   key={item.id}
-                  layout
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -80 }}

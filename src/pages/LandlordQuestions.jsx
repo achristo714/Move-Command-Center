@@ -1,16 +1,39 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, X, Check, MessageCircle, Edit3, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, X, Check, MessageCircle, Edit3, Trash2, Tag } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '../hooks/useStore'
 import store from '../lib/store'
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { value: 'general', label: 'General', color: 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400' },
   { value: 'repairs', label: 'Repairs', color: 'bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400' },
   { value: 'rules', label: 'Rules / Policy', color: 'bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400' },
   { value: 'utilities', label: 'Utilities', color: 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400' },
 ]
+
+const CUSTOM_COLORS = [
+  'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400',
+  'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400',
+  'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+  'bg-teal-100 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400',
+  'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400',
+  'bg-pink-100 text-pink-700 dark:bg-pink-500/10 dark:text-pink-400',
+]
+
+function getCategories(questions) {
+  const cats = [...DEFAULT_CATEGORIES]
+  const known = new Set(cats.map(c => c.value))
+  // Discover custom categories from existing questions
+  questions.forEach(q => {
+    if (q.category && !known.has(q.category)) {
+      known.add(q.category)
+      const colorIdx = (cats.length - DEFAULT_CATEGORIES.length) % CUSTOM_COLORS.length
+      cats.push({ value: q.category, label: q.category, color: CUSTOM_COLORS[colorIdx] })
+    }
+  })
+  return cats
+}
 
 export default function LandlordQuestions() {
   const navigate = useNavigate()
@@ -21,7 +44,12 @@ export default function LandlordQuestions() {
   const [editingId, setEditingId] = useState(null)
   const [editText, setEditText] = useState('')
   const [editAnswer, setEditAnswer] = useState('')
+  const [editCategory, setEditCategory] = useState('')
   const [filter, setFilter] = useState('all') // 'all' | 'open' | 'answered'
+  const [showNewCategory, setShowNewCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+
+  const CATEGORIES = getCategories(questions)
 
   const handleAdd = () => {
     if (!newText.trim()) return
@@ -36,15 +64,28 @@ export default function LandlordQuestions() {
     }
   }
 
+  const handleAddCategory = () => {
+    const name = newCategoryName.trim()
+    if (!name) return
+    const value = name.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+    if (!CATEGORIES.find(c => c.value === value)) {
+      // Category will be auto-discovered from the question data
+    }
+    setNewCategory(value)
+    setNewCategoryName('')
+    setShowNewCategory(false)
+  }
+
   const startEdit = (q) => {
     setEditingId(q.id)
     setEditText(q.text)
     setEditAnswer(q.answer || '')
+    setEditCategory(q.category)
   }
 
   const saveEdit = () => {
     if (editingId) {
-      store.updateLandlordQuestion(editingId, { text: editText, answer: editAnswer })
+      store.updateLandlordQuestion(editingId, { text: editText, answer: editAnswer, category: editCategory })
       setEditingId(null)
     }
   }
@@ -57,6 +98,14 @@ export default function LandlordQuestions() {
 
   const openCount = questions.filter(q => !q.is_answered).length
   const answeredCount = questions.filter(q => q.is_answered).length
+
+  // For the "new category" input, figure out the value from the name
+  const pendingCategoryValue = newCategoryName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_')
+  const allCatsForNew = CATEGORIES.find(c => c.value === pendingCategoryValue)
+    ? CATEGORIES
+    : newCategoryName.trim()
+      ? [...CATEGORIES, { value: pendingCategoryValue, label: newCategoryName.trim(), color: CUSTOM_COLORS[CATEGORIES.length % CUSTOM_COLORS.length] }]
+      : CATEGORIES
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
@@ -89,7 +138,7 @@ export default function LandlordQuestions() {
             <Plus className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex gap-1.5 flex-wrap">
+        <div className="flex gap-1.5 flex-wrap items-center">
           {CATEGORIES.map(c => (
             <button
               key={c.value}
@@ -103,6 +152,32 @@ export default function LandlordQuestions() {
               {c.label}
             </button>
           ))}
+          {showNewCategory ? (
+            <div className="flex items-center gap-1">
+              <input
+                autoFocus
+                value={newCategoryName}
+                onChange={e => setNewCategoryName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleAddCategory()
+                  if (e.key === 'Escape') { setShowNewCategory(false); setNewCategoryName('') }
+                }}
+                placeholder="Category name..."
+                className="text-xs border border-blue-300 dark:border-blue-500 rounded-full px-2.5 py-1 bg-white dark:bg-slate-800 dark:text-white outline-none w-28"
+              />
+              <button onClick={handleAddCategory} className="text-xs text-blue-500 font-medium px-1">Add</button>
+              <button onClick={() => { setShowNewCategory(false); setNewCategoryName('') }} className="text-xs text-slate-400 px-1">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowNewCategory(true)}
+              className="text-xs px-2.5 py-1 rounded-full font-medium bg-slate-100 dark:bg-slate-700/30 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border border-dashed border-slate-300 dark:border-slate-600"
+            >
+              + New
+            </button>
+          )}
         </div>
       </div>
 
@@ -129,7 +204,7 @@ export default function LandlordQuestions() {
 
       {/* Questions list */}
       <div className="space-y-2">
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {filtered.map(q => {
             const cat = CATEGORIES.find(c => c.value === q.category) || CATEGORIES[0]
             const isEditing = editingId === q.id
@@ -137,7 +212,6 @@ export default function LandlordQuestions() {
             return (
               <motion.div
                 key={q.id}
-                layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: -100 }}
@@ -162,6 +236,23 @@ export default function LandlordQuestions() {
                       placeholder="Landlord's answer or notes..."
                       className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-green-50 dark:bg-green-500/5 dark:text-white resize-none"
                     />
+                    {/* Category picker in edit mode */}
+                    <div className="flex gap-1.5 flex-wrap items-center">
+                      <Tag className="w-3 h-3 text-slate-400" />
+                      {CATEGORIES.map(c => (
+                        <button
+                          key={c.value}
+                          onClick={() => setEditCategory(c.value)}
+                          className={`text-xs px-2 py-0.5 rounded-full font-medium transition-all ${
+                            editCategory === c.value
+                              ? c.color + ' ring-2 ring-offset-1 ring-blue-300 dark:ring-blue-500/50 dark:ring-offset-slate-800'
+                              : 'bg-slate-100 dark:bg-slate-700/30 text-slate-400'
+                          }`}
+                        >
+                          {c.label}
+                        </button>
+                      ))}
+                    </div>
                     <div className="flex justify-end gap-2">
                       <button onClick={() => setEditingId(null)} className="text-xs text-slate-400 px-2 py-1">Cancel</button>
                       <button onClick={saveEdit} className="text-xs text-blue-500 font-medium px-2 py-1">Save</button>
