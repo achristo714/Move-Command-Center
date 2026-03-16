@@ -3,13 +3,27 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-packed: #3b82f6;
-  --color-loaded: #f97316;
-  --color-in-storage: #8b5cf6;
-  --color-delivered: #f59e0b;
-  --color-unpacked: #22c55e;
-  --color-fragile: #ef4444;
-  --color-priority: #eab308;
+  /* Status colors — soft pastel (light) */
+  --color-packed: #8bb8a8;
+  --color-loaded: #e8a87c;
+  --color-in-storage: #b8a9c9;
+  --color-delivered: #d4b483;
+  --color-unpacked: #95c9a8;
+  --color-fragile: #e8928a;
+  --color-priority: #f0d58c;
+
+  /* "Hers" cozy palette — Animal Crossing vibes */
+  --color-cream: #faf6f0;
+  --color-linen: #f5ede3;
+  --color-peach: #f5cbb7;
+  --color-sage: #9bb8a4;
+  --color-sage-light: #d4e4d9;
+  --color-blush: #eab8be;
+  --color-lavender: #c5b5d6;
+  --color-butter: #f5e6b8;
+  --color-sky-soft: #b5cfe0;
+  --color-bark: #7a6b5d;
+  --color-bark-light: #a89882;
 }
 
 @layer base {
@@ -24,30 +38,34 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  /* ── "HERS" light mode: cozy, organic, soft ── */
   .dot-grid {
-    background-image: radial-gradient(circle, rgba(148, 163, 184, 0.15) 1px, transparent 1px);
-    background-size: 24px 24px;
-  }
-
-  .dark .dot-grid, .dot-grid-dark {
-    background-image: radial-gradient(circle, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(circle, rgba(155, 184, 164, 0.18) 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
   }
 
   .geo-border {
-    border: 1px dashed rgba(148, 163, 184, 0.3);
+    border: 1.5px dashed rgba(155, 184, 164, 0.3);
+  }
+
+  .glow-warm, .glow-blue {
+    box-shadow: 0 4px 24px rgba(155, 184, 164, 0.12);
+  }
+
+  /* ── "HIS" dark mode: modern, geometric, sharp ── */
+  .dark .dot-grid {
+    background-image:
+      linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
 
   .dark .geo-border {
-    border-color: rgba(148, 163, 184, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.15);
   }
 
-  .glow-blue {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
-  }
-
-  .dark .glow-blue {
-    box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+  .dark .glow-warm, .dark .glow-blue {
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.08), 0 0 60px rgba(99, 102, 241, 0.04);
   }
 }
 

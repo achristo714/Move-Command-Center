@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Package, MapPin, Search, Image, Plus, Settings, Moon, Sun, Menu, X, ClipboardList, Calculator, MessageCircle, CheckSquare, ListOrdered } from 'lucide-react'
+import { Home, Package, MapPin, Search, Image, Plus, Settings, Moon, Sun, Menu, X, ClipboardList, Calculator, MessageCircle, CheckSquare, ListOrdered } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../hooks/useTheme'
 
 const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Home' },
+  { to: '/', icon: Home, label: 'Home' },
   { to: '/boxes', icon: Package, label: 'Boxes' },
   { to: '/rooms', icon: MapPin, label: 'Rooms' },
   { to: '/search', icon: Search, label: 'Search' },
@@ -33,43 +33,45 @@ export default function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20 lg:pb-6">
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700">
+    <div className={`min-h-screen pb-20 lg:pb-6 ${
+      dark
+        ? 'bg-gray-950'                    /* HIS: deep dark */
+        : 'bg-[#faf6f0]'                   /* HERS: warm cream */
+    }`}>
+      <header className={`sticky top-0 z-40 backdrop-blur-lg border-b ${
+        dark
+          ? 'bg-gray-950/80 border-gray-800'
+          : 'bg-[#faf6f0]/80 border-[#e8ddd0]'
+      }`}>
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <NavLink to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-sm ${
+              dark
+                ? 'bg-indigo-600'
+                : 'bg-gradient-to-br from-[#9bb8a4] to-[#7da88a]'
+            }`}>
               <Package className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-slate-800 dark:text-white text-lg">MoveHQ</span>
+            <span className={`font-bold text-lg tracking-tight ${
+              dark ? 'text-white' : 'text-[#5a4e42]'
+            }`}>MoveHQ</span>
           </NavLink>
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-1">
-            {navItems.map(({ to, icon: Icon, label }) => (
+            {[...navItems, ...moreItems.slice(0, 3)].map(({ to, icon: Icon, label }) => (
               <NavLink
                 key={to}
                 to={to}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  `flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`
-                }
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-              </NavLink>
-            ))}
-            {moreItems.slice(0, 3).map(({ to, icon: Icon, label }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      ? dark
+                        ? 'bg-indigo-500/15 text-indigo-400'
+                        : 'bg-[#d4e4d9] text-[#4a7c5c]'
+                      : dark
+                        ? 'text-gray-400 hover:bg-gray-800/60'
+                        : 'text-[#8a7e72] hover:bg-[#f0e8de]'
                   }`
                 }
               >
@@ -82,13 +84,22 @@ export default function Layout() {
           <div className="flex items-center gap-2">
             <button
               onClick={toggle}
-              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              className={`p-2 rounded-lg transition-colors ${
+                dark
+                  ? 'text-gray-400 hover:text-yellow-300 hover:bg-gray-800'
+                  : 'text-[#b0a090] hover:text-[#7a6b5d] hover:bg-[#f0e8de]'
+              }`}
+              title={dark ? 'Switch to Hers' : 'Switch to His'}
             >
               {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
             <button
               onClick={() => navigate('/boxes/new')}
-              className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg shadow-blue-500/30 active:scale-95 transition-transform"
+              className={`text-white rounded-full w-10 h-10 flex items-center justify-center active:scale-95 transition-transform ${
+                dark
+                  ? 'bg-indigo-600 shadow-lg shadow-indigo-500/30'
+                  : 'bg-gradient-to-br from-[#9bb8a4] to-[#7da88a] shadow-lg shadow-[#9bb8a4]/30'
+              }`}
             >
               <Plus className="w-5 h-5" />
             </button>
@@ -118,7 +129,7 @@ export default function Layout() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 z-50"
+              className="fixed inset-0 bg-black/25 z-50"
               onClick={() => setMoreOpen(false)}
             />
             <motion.div
@@ -126,12 +137,17 @@ export default function Layout() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-800 rounded-t-2xl shadow-2xl max-h-[70vh] overflow-auto safe-bottom"
+              className={`fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl shadow-2xl max-h-[70vh] overflow-auto safe-bottom ${
+                dark ? 'bg-gray-900' : 'bg-white'
+              }`}
             >
-              <div className="p-4">
+              <div className="p-5">
+                <div className={`w-10 h-1 rounded-full mx-auto mb-4 ${
+                  dark ? 'bg-gray-700' : 'bg-[#e0d5c8]'
+                }`} />
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-slate-800 dark:text-white">More</h2>
-                  <button onClick={() => setMoreOpen(false)} className="p-1 text-slate-400">
+                  <h2 className={`font-bold ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>More</h2>
+                  <button onClick={() => setMoreOpen(false)} className={dark ? 'p-1 text-gray-500' : 'p-1 text-[#b0a090]'}>
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -144,17 +160,19 @@ export default function Layout() {
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
                           isActive
-                            ? 'bg-blue-50 dark:bg-blue-500/10'
-                            : 'hover:bg-slate-50 dark:hover:bg-slate-700/30 active:bg-slate-100'
+                            ? dark ? 'bg-indigo-500/10' : 'bg-[#edf5ef]'
+                            : dark ? 'hover:bg-gray-800' : 'hover:bg-[#f8f2ec] active:bg-[#f0e8de]'
                         }`
                       }
                     >
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-700/50`}>
-                        <Icon className="w-4.5 h-4.5 text-slate-600 dark:text-slate-300" />
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                        dark ? 'bg-gray-800' : 'bg-[#f0ebe4]'
+                      }`}>
+                        <Icon className={`w-4.5 h-4.5 ${dark ? 'text-indigo-400' : 'text-[#9bb8a4]'}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-slate-800 dark:text-white">{label}</div>
-                        <div className="text-xs text-slate-400 truncate">{desc}</div>
+                        <div className={`text-sm font-medium ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>{label}</div>
+                        <div className={`text-xs truncate ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>{desc}</div>
                       </div>
                     </NavLink>
                   ))}
@@ -166,7 +184,11 @@ export default function Layout() {
       </AnimatePresence>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-slate-200 dark:border-slate-700 safe-bottom lg:hidden">
+      <nav className={`fixed bottom-0 left-0 right-0 z-40 backdrop-blur-lg border-t safe-bottom lg:hidden ${
+        dark
+          ? 'bg-gray-950/80 border-gray-800'
+          : 'bg-white/80 border-[#e8ddd0]'
+      }`}>
         <div className="max-w-5xl mx-auto flex justify-around py-2">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
@@ -175,8 +197,8 @@ export default function Layout() {
               className={({ isActive }) =>
                 `flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
                   isActive
-                    ? 'text-blue-500'
-                    : 'text-slate-400 active:text-slate-600'
+                    ? dark ? 'text-indigo-400' : 'text-[#7da88a]'
+                    : dark ? 'text-gray-500 active:text-gray-300' : 'text-[#b0a090] active:text-[#8a7e72]'
                 }`
               }
             >
@@ -187,7 +209,9 @@ export default function Layout() {
           <button
             onClick={() => setMoreOpen(true)}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
-              moreOpen ? 'text-blue-500' : 'text-slate-400 active:text-slate-600'
+              moreOpen
+                ? dark ? 'text-indigo-400' : 'text-[#7da88a]'
+                : dark ? 'text-gray-500 active:text-gray-300' : 'text-[#b0a090] active:text-[#8a7e72]'
             }`}
           >
             <Menu className="w-5 h-5" />

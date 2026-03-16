@@ -4,16 +4,17 @@ import { motion } from 'framer-motion'
 import ProgressRing from '../components/ProgressRing'
 import { useStats, useRooms, useActivityLog, useEssentials } from '../hooks/useStore'
 import { getStatusColor, getStatusLabel, STATUS_OPTIONS } from '../lib/constants'
+import { useTheme } from '../hooks/useTheme'
 import store from '../lib/store'
 
-function StatCard({ icon: Icon, label, value, color = 'text-slate-800', bgColor = 'bg-slate-100' }) {
+function StatCard({ icon: Icon, label, value, color, bgColor, darkBgColor, darkColor }) {
   return (
-    <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-3 geo-border">
-      <div className={`w-8 h-8 ${bgColor} dark:bg-opacity-20 rounded-lg flex items-center justify-center mb-2`}>
-        <Icon className={`w-4 h-4 ${color}`} />
+    <div className={`rounded-2xl border p-3 bg-white dark:bg-gray-900/60 border-[#e8ddd0]/60 dark:border-gray-800`}>
+      <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${bgColor} ${darkBgColor}`}>
+        <Icon className={`w-4 h-4 ${color} ${darkColor}`} />
       </div>
-      <div className="text-2xl font-bold text-slate-800 dark:text-white">{value}</div>
-      <div className="text-xs text-slate-400">{label}</div>
+      <div className="text-2xl font-bold text-[#5a4e42] dark:text-white">{value}</div>
+      <div className="text-xs text-[#b0a090] dark:text-gray-500">{label}</div>
     </div>
   )
 }
@@ -24,6 +25,7 @@ export default function Dashboard() {
   const { rooms } = useRooms()
   const activity = useActivityLog()
   const { essentials } = useEssentials()
+  const { dark } = useTheme()
 
   const essentialsPacked = essentials.filter(e => e.is_packed).length
   const essentialsTotal = essentials.length
@@ -36,16 +38,24 @@ export default function Dashboard() {
     unpacked: CheckCircle2,
   }
 
+  const progressColor = dark ? '#818cf8' : '#95c9a8'
+
   return (
     <div className="space-y-6">
       {/* Hero / Progress */}
-      <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 p-6 text-center dot-grid glow-blue">
-        <h1 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Move Command Center</h1>
-        <p className="text-sm text-slate-400 mb-4">
+      <div className={`rounded-3xl p-6 text-center dot-grid glow-warm ${
+        dark
+          ? 'bg-gray-900/60 border border-gray-800'
+          : 'bg-white border border-[#e8ddd0]/60'
+      }`}>
+        <h1 className={`text-lg font-bold mb-1 ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>
+          {dark ? 'Command Center' : 'Our New Home'}
+        </h1>
+        <p className={`text-sm mb-4 ${dark ? 'text-gray-400' : 'text-[#b0a090]'}`}>
           {stats.total === 0
-            ? "No boxes yet — let's get packing!"
+            ? dark ? "No boxes tracked yet." : "No boxes yet — let's get packing!"
             : stats.unpacked === stats.total
-            ? 'Welcome home! Everything is unpacked.'
+            ? dark ? 'Mission complete. All unpacked.' : 'Welcome home! Everything is unpacked.'
             : `${stats.toUnpack} boxes to go`}
         </p>
         <div className="flex justify-center">
@@ -54,13 +64,13 @@ export default function Dashboard() {
             total={stats.total || 1}
             size={140}
             strokeWidth={12}
-            color="#22c55e"
+            color={progressColor}
           >
             <div className="text-center">
-              <div className="text-3xl font-bold text-slate-800 dark:text-white">
+              <div className={`text-3xl font-bold ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>
                 {stats.total > 0 ? Math.round((stats.unpacked / stats.total) * 100) : 0}%
               </div>
-              <div className="text-xs text-slate-400">unpacked</div>
+              <div className={`text-xs ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>unpacked</div>
             </div>
           </ProgressRing>
         </div>
@@ -68,16 +78,18 @@ export default function Dashboard() {
 
       {/* Key Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard icon={Package} label="Total Boxes" value={stats.total} bgColor="bg-blue-50" color="text-blue-500" />
-        <StatCard icon={Clock} label="Packed Today" value={stats.packedToday} bgColor="bg-orange-50" color="text-orange-500" />
-        <StatCard icon={AlertTriangle} label="Fragile" value={stats.fragileCount} bgColor="bg-red-50" color="text-red-500" />
-        <StatCard icon={Star} label="Priority (Unpacked)" value={stats.priorityUnpacked} bgColor="bg-yellow-50" color="text-yellow-500" />
+        <StatCard icon={Package} label="Total Boxes" value={stats.total} bgColor="bg-[#d4e4d9]" color="text-[#6a9b7a]" darkBgColor="dark:bg-indigo-500/10" darkColor="dark:text-indigo-400" />
+        <StatCard icon={Clock} label="Packed Today" value={stats.packedToday} bgColor="bg-[#f5e6d0]" color="text-[#c4935a]" darkBgColor="dark:bg-amber-500/10" darkColor="dark:text-amber-400" />
+        <StatCard icon={AlertTriangle} label="Fragile" value={stats.fragileCount} bgColor="bg-[#f5d5d2]" color="text-[#c97a74]" darkBgColor="dark:bg-red-500/10" darkColor="dark:text-red-400" />
+        <StatCard icon={Star} label="Priority" value={stats.priorityUnpacked} bgColor="bg-[#f5ecd0]" color="text-[#c4a03a]" darkBgColor="dark:bg-yellow-500/10" darkColor="dark:text-yellow-400" />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Status Breakdown */}
-        <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 p-4">
-          <h2 className="font-semibold text-slate-800 dark:text-white mb-3">Status Breakdown</h2>
+        <div className={`rounded-2xl p-4 ${
+          dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
+        }`}>
+          <h2 className={`font-semibold mb-3 ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>Status Breakdown</h2>
           <div className="space-y-2">
             {STATUS_OPTIONS.map(({ value, label }) => {
               const count = stats.byStatus[value] || 0
@@ -86,8 +98,8 @@ export default function Dashboard() {
               return (
                 <div key={value} className="flex items-center gap-3">
                   <Icon className="w-4 h-4 flex-shrink-0" style={{ color: getStatusColor(value) }} />
-                  <span className="text-sm text-slate-600 dark:text-slate-300 w-20">{label}</span>
-                  <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-700/50 rounded-full overflow-hidden">
+                  <span className={`text-sm w-20 ${dark ? 'text-gray-300' : 'text-[#7a6b5d]'}`}>{label}</span>
+                  <div className={`flex-1 h-6 rounded-full overflow-hidden ${dark ? 'bg-gray-800' : 'bg-[#f0ebe4]'}`}>
                     <motion.div
                       className="h-full rounded-full"
                       style={{ backgroundColor: getStatusColor(value) }}
@@ -96,7 +108,7 @@ export default function Dashboard() {
                       transition={{ duration: 0.8, ease: 'easeOut' }}
                     />
                   </div>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200 w-8 text-right">{count}</span>
+                  <span className={`text-sm font-medium w-8 text-right ${dark ? 'text-gray-200' : 'text-[#5a4e42]'}`}>{count}</span>
                 </div>
               )
             })}
@@ -104,12 +116,14 @@ export default function Dashboard() {
         </div>
 
         {/* Room Overview */}
-        <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 p-4">
+        <div className={`rounded-2xl p-4 ${
+          dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
+        }`}>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-slate-800 dark:text-white">Rooms</h2>
+            <h2 className={`font-semibold ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>Rooms</h2>
             <button
               onClick={() => navigate('/rooms')}
-              className="text-sm text-blue-500 font-medium"
+              className={`text-sm font-medium ${dark ? 'text-indigo-400' : 'text-[#7da88a]'}`}
             >
               View all
             </button>
@@ -122,15 +136,17 @@ export default function Dashboard() {
                 <button
                   key={room.id}
                   onClick={() => navigate(`/rooms/${room.id}`)}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/30 active:bg-slate-100 transition-colors"
+                  className={`w-full flex items-center justify-between p-2 rounded-xl transition-colors ${
+                    dark ? 'hover:bg-gray-800 active:bg-gray-700' : 'hover:bg-[#f8f2ec] active:bg-[#f0e8de]'
+                  }`}
                 >
-                  <span className="text-sm text-slate-700 dark:text-slate-300">{room.name}</span>
+                  <span className={`text-sm ${dark ? 'text-gray-300' : 'text-[#5a4e42]'}`}>{room.name}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">
+                    <span className={`text-xs ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>
                       {roomUnpacked}/{roomBoxes.length} unpacked
                     </span>
                     {roomBoxes.length > 0 && roomUnpacked === roomBoxes.length && (
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      <CheckCircle2 className={`w-4 h-4 ${dark ? 'text-emerald-400' : 'text-[#95c9a8]'}`} />
                     )}
                   </div>
                 </button>
@@ -143,101 +159,74 @@ export default function Dashboard() {
       {/* Essentials Kit Progress */}
       <button
         onClick={() => navigate('/essentials')}
-        className="w-full bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-500/10 dark:to-amber-500/10 rounded-2xl border border-yellow-200 dark:border-yellow-500/20 p-4 text-left"
+        className={`w-full rounded-2xl border p-4 text-left ${
+          dark
+            ? 'bg-amber-500/5 border-amber-500/20'
+            : 'bg-gradient-to-r from-[#faf0e4] to-[#f5e6d0] border-[#e8d5be]'
+        }`}
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-semibold text-slate-800 dark:text-white">Essentials Kit</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            <h2 className={`font-semibold ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>Essentials Kit</h2>
+            <p className={`text-sm mt-0.5 ${dark ? 'text-gray-400' : 'text-[#b0a090]'}`}>
               {essentialsPacked} of {essentialsTotal} items packed
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <ProgressRing value={essentialsPacked} total={essentialsTotal || 1} size={48} strokeWidth={4} color="#eab308" />
-            <ArrowRight className="w-4 h-4 text-slate-400" />
+            <ProgressRing value={essentialsPacked} total={essentialsTotal || 1} size={48} strokeWidth={4} color={dark ? '#f59e0b' : '#d4a166'} />
+            <ArrowRight className={`w-4 h-4 ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`} />
           </div>
         </div>
       </button>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        <button
-          onClick={() => navigate('/unpack')}
-          className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 text-left active:scale-[0.98] transition-transform"
-        >
-          <CheckCircle2 className="w-5 h-5 text-green-500 mb-2" />
-          <div className="font-medium text-sm text-slate-800 dark:text-white">Unpacking Queue</div>
-          <div className="text-xs text-slate-400 mt-0.5">{stats.toUnpack} remaining</div>
-        </button>
-        <button
-          onClick={() => navigate('/labels')}
-          className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 text-left active:scale-[0.98] transition-transform"
-        >
-          <Package className="w-5 h-5 text-blue-500 mb-2" />
-          <div className="font-medium text-sm text-slate-800 dark:text-white">Print Labels</div>
-          <div className="text-xs text-slate-400 mt-0.5">QR codes for boxes</div>
-        </button>
-        <button
-          onClick={() => navigate('/print/movers')}
-          className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 text-left active:scale-[0.98] transition-transform"
-        >
-          <Truck className="w-5 h-5 text-orange-500 mb-2" />
-          <div className="font-medium text-sm text-slate-800 dark:text-white">Mover Sheet</div>
-          <div className="text-xs text-slate-400 mt-0.5">Print for movers</div>
-        </button>
-        <button
-          onClick={() => navigate('/essentials')}
-          className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 text-left active:scale-[0.98] transition-transform"
-        >
-          <Star className="w-5 h-5 text-yellow-500 mb-2" />
-          <div className="font-medium text-sm text-slate-800 dark:text-white">Essentials</div>
-          <div className="text-xs text-slate-400 mt-0.5">First night kit</div>
-        </button>
-        <button
-          onClick={() => navigate('/landlord')}
-          className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 text-left active:scale-[0.98] transition-transform"
-        >
-          <MessageCircle className="w-5 h-5 text-purple-500 mb-2" />
-          <div className="font-medium text-sm text-slate-800 dark:text-white">Landlord Q's</div>
-          <div className="text-xs text-slate-400 mt-0.5">Questions & requests</div>
-        </button>
-        <button
-          onClick={() => navigate('/checklist')}
-          className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 text-left active:scale-[0.98] transition-transform"
-        >
-          <ClipboardList className="w-5 h-5 text-teal-500 mb-2" />
-          <div className="font-medium text-sm text-slate-800 dark:text-white">Move-In Checklist</div>
-          <div className="text-xs text-slate-400 mt-0.5">Utilities, address, setup</div>
-        </button>
-        <button
-          onClick={() => navigate('/estimate')}
-          className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 text-left active:scale-[0.98] transition-transform"
-        >
-          <Calculator className="w-5 h-5 text-emerald-500 mb-2" />
-          <div className="font-medium text-sm text-slate-800 dark:text-white">Moving Estimate</div>
-          <div className="text-xs text-slate-400 mt-0.5">Box counts & furniture</div>
-        </button>
+        {[
+          { to: '/unpack', icon: CheckCircle2, label: 'Unpacking Queue', sub: `${stats.toUnpack} remaining`, iconColor: dark ? 'text-emerald-400' : 'text-[#95c9a8]' },
+          { to: '/labels', icon: Package, label: 'Print Labels', sub: 'QR codes for boxes', iconColor: dark ? 'text-indigo-400' : 'text-[#9bb8a4]' },
+          { to: '/print/movers', icon: Truck, label: 'Mover Sheet', sub: 'Print for movers', iconColor: dark ? 'text-amber-400' : 'text-[#c4935a]' },
+          { to: '/essentials', icon: Star, label: 'Essentials', sub: 'First night kit', iconColor: dark ? 'text-yellow-400' : 'text-[#c4a03a]' },
+          { to: '/landlord', icon: MessageCircle, label: 'Landlord Q\'s', sub: 'Questions & requests', iconColor: dark ? 'text-purple-400' : 'text-[#b8a9c9]' },
+          { to: '/checklist', icon: ClipboardList, label: 'Move-In Checklist', sub: 'Utilities, address, setup', iconColor: dark ? 'text-cyan-400' : 'text-[#8bb8a8]' },
+          { to: '/estimate', icon: Calculator, label: 'Moving Estimate', sub: 'Box counts & furniture', iconColor: dark ? 'text-lime-400' : 'text-[#7da88a]' },
+        ].map(({ to, icon: Icon, label, sub, iconColor }) => (
+          <button
+            key={to}
+            onClick={() => navigate(to)}
+            className={`rounded-2xl border p-4 text-left active:scale-[0.98] transition-transform ${
+              dark
+                ? 'bg-gray-900/60 border-gray-800 hover:border-gray-700'
+                : 'bg-white border-[#e8ddd0]/60 hover:border-[#d4c8ba]'
+            }`}
+          >
+            <Icon className={`w-5 h-5 mb-2 ${iconColor}`} />
+            <div className={`font-medium text-sm ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>{label}</div>
+            <div className={`text-xs mt-0.5 ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>{sub}</div>
+          </button>
+        ))}
       </div>
 
       {/* Countdown + Packing Schedule */}
-      <PackingSchedule rooms={rooms} store={store} />
+      <PackingSchedule rooms={rooms} store={store} dark={dark} />
 
       {/* Activity Feed */}
       {activity.length > 0 && (
-        <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 p-4">
-          <h2 className="font-semibold text-slate-800 dark:text-white mb-3">Recent Activity</h2>
+        <div className={`rounded-2xl p-4 ${
+          dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
+        }`}>
+          <h2 className={`font-semibold mb-3 ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>Recent Activity</h2>
           <div className="space-y-2">
             {activity.slice(0, 5).map(entry => {
               const box = store.getBox(entry.box_id)
               const timeAgo = getTimeAgo(entry.created_at)
               return (
                 <div key={entry.id} className="flex items-center gap-2 text-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-                  <span className="text-slate-600 dark:text-slate-300">
+                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dark ? 'bg-indigo-400' : 'bg-[#9bb8a4]'}`} />
+                  <span className={dark ? 'text-gray-300' : 'text-[#7a6b5d]'}>
                     {entry.action === 'created' && `Box #${entry.details?.box_number} packed`}
                     {entry.action === 'status_changed' && `Box #${box?.box_number || '?'} → ${getStatusLabel(entry.details?.status)}`}
                   </span>
-                  <span className="text-slate-300 dark:text-slate-500 ml-auto text-xs">{timeAgo}</span>
+                  <span className={`ml-auto text-xs ${dark ? 'text-gray-600' : 'text-[#c4b5a2]'}`}>{timeAgo}</span>
                 </div>
               )
             })}
@@ -248,13 +237,12 @@ export default function Dashboard() {
   )
 }
 
-function PackingSchedule({ rooms, store }) {
+function PackingSchedule({ rooms, store, dark }) {
   const moveDate = new Date('2026-05-01')
   const today = new Date()
   const daysLeft = Math.max(0, Math.ceil((moveDate - today) / (1000 * 60 * 60 * 24)))
   const weeksLeft = Math.ceil(daysLeft / 7)
 
-  // Packing priority: least-used rooms first, most-used rooms last
   const schedule = [
     { week: 'Now (6+ weeks out)', priority: 'low', rooms: ['Storage Locker', 'Basement', 'Garage', 'Donate / Discard'], tip: 'Start with rooms you barely use. Seasonal items, storage, decorations.' },
     { week: '4-5 weeks out', priority: 'medium', rooms: ['Office', "Lydia's Room", "Miles's Room"], tip: "Kids' rooms (except daily essentials), office books & files, wall art." },
@@ -272,20 +260,24 @@ function PackingSchedule({ rooms, store }) {
   const currentPhase = getPhaseForDays(daysLeft)
 
   return (
-    <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 p-4">
+    <div className={`rounded-2xl p-4 ${
+      dark ? 'bg-gray-900/60 border border-gray-800' : 'bg-white border border-[#e8ddd0]/60'
+    }`}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-blue-500" />
+        <h2 className={`font-semibold flex items-center gap-2 ${dark ? 'text-white' : 'text-[#5a4e42]'}`}>
+          <Calendar className={`w-4 h-4 ${dark ? 'text-indigo-400' : 'text-[#9bb8a4]'}`} />
           Packing Schedule
         </h2>
-        <div className="flex items-center gap-1 bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-full">
-          <Timer className="w-3.5 h-3.5 text-blue-500" />
-          <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{daysLeft}</span>
-          <span className="text-xs text-blue-500">days to go</span>
+        <div className={`flex items-center gap-1 px-3 py-1 rounded-full ${
+          dark ? 'bg-indigo-500/10' : 'bg-[#d4e4d9]'
+        }`}>
+          <Timer className={`w-3.5 h-3.5 ${dark ? 'text-indigo-400' : 'text-[#6a9b7a]'}`} />
+          <span className={`text-sm font-bold ${dark ? 'text-indigo-400' : 'text-[#4a7c5c]'}`}>{daysLeft}</span>
+          <span className={`text-xs ${dark ? 'text-indigo-400/60' : 'text-[#6a9b7a]'}`}>days</span>
         </div>
       </div>
 
-      <div className="text-xs text-slate-400 mb-3">
+      <div className={`text-xs mb-3 ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>
         Move day: May 1, 2026 · ~{weeksLeft} weeks left
       </div>
 
@@ -300,31 +292,49 @@ function PackingSchedule({ rooms, store }) {
           return (
             <div
               key={i}
-              className={`rounded-lg p-3 border transition-colors ${
+              className={`rounded-xl p-3 border transition-colors ${
                 isCurrent
-                  ? 'border-blue-400 dark:border-blue-500/50 bg-blue-50/50 dark:bg-blue-500/5'
+                  ? dark
+                    ? 'border-indigo-500/40 bg-indigo-500/5'
+                    : 'border-[#9bb8a4] bg-[#edf5ef]'
                   : isPast
-                  ? 'border-green-300 dark:border-green-500/30 bg-green-50/30 dark:bg-green-500/5'
-                  : 'border-slate-200 dark:border-slate-700/30'
+                  ? dark
+                    ? 'border-emerald-500/30 bg-emerald-500/5'
+                    : 'border-[#c5d9cb] bg-[#f2f8f4]'
+                  : dark
+                    ? 'border-gray-800'
+                    : 'border-[#e8ddd0]/60'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
-                  {isPast && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                  {isCurrent && <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
-                  <span className={`text-sm font-medium ${isCurrent ? 'text-blue-700 dark:text-blue-400' : isPast ? 'text-green-700 dark:text-green-400' : 'text-slate-600 dark:text-slate-400'}`}>
+                  {isPast && <CheckCircle2 className={`w-4 h-4 ${dark ? 'text-emerald-400' : 'text-[#95c9a8]'}`} />}
+                  {isCurrent && <div className={`w-2 h-2 rounded-full animate-pulse ${dark ? 'bg-indigo-500' : 'bg-[#9bb8a4]'}`} />}
+                  <span className={`text-sm font-medium ${
+                    isCurrent
+                      ? dark ? 'text-indigo-400' : 'text-[#4a7c5c]'
+                      : isPast
+                      ? dark ? 'text-emerald-400' : 'text-[#6a9b7a]'
+                      : dark ? 'text-gray-400' : 'text-[#8a7e72]'
+                  }`}>
                     {phase.week}
                   </span>
-                  {isCurrent && <span className="text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-medium">NOW</span>}
+                  {isCurrent && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white ${
+                      dark ? 'bg-indigo-500' : 'bg-[#9bb8a4]'
+                    }`}>NOW</span>
+                  )}
                 </div>
-                {packedCount > 0 && <span className="text-xs text-slate-400">{packedCount} packed</span>}
+                {packedCount > 0 && <span className={`text-xs ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>{packedCount} packed</span>}
               </div>
               <div className="flex flex-wrap gap-1 mb-1">
                 {phase.rooms.map(r => (
-                  <span key={r} className="text-xs bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full">{r}</span>
+                  <span key={r} className={`text-xs px-2 py-0.5 rounded-full ${
+                    dark ? 'bg-gray-800 text-gray-400' : 'bg-[#f0ebe4] text-[#8a7e72]'
+                  }`}>{r}</span>
                 ))}
               </div>
-              <p className="text-xs text-slate-400">{phase.tip}</p>
+              <p className={`text-xs ${dark ? 'text-gray-500' : 'text-[#b0a090]'}`}>{phase.tip}</p>
             </div>
           )
         })}

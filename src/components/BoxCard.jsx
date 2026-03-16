@@ -28,9 +28,11 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className={`bg-white dark:bg-slate-800/50 rounded-xl border transition-all active:scale-[0.98] ${
-        box.is_priority ? 'border-yellow-400 dark:border-yellow-500/40 ring-1 ring-yellow-200 dark:ring-yellow-500/20' : 'border-slate-200 dark:border-slate-700/50'
-      } ${selected ? 'ring-2 ring-blue-500' : ''}`}
+      className={`bg-white dark:bg-gray-900/60 rounded-2xl border transition-all active:scale-[0.98] ${
+        box.is_priority
+          ? 'border-[#e8c55a]/60 dark:border-yellow-500/40 ring-1 ring-[#f5ecd0] dark:ring-yellow-500/20'
+          : 'border-[#e8ddd0]/60 dark:border-gray-800'
+      } ${selected ? 'ring-2 ring-[#9bb8a4] dark:ring-indigo-500' : ''}`}
       onClick={() => navigate(`/boxes/${box.id}`)}
     >
       <div className="p-3 flex items-center gap-3">
@@ -38,32 +40,32 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
           <button
             onClick={handleSelect}
             className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-              selected ? 'bg-blue-500 border-blue-500' : 'border-slate-300 dark:border-slate-600'
+              selected ? 'bg-[#9bb8a4] border-[#9bb8a4] dark:bg-indigo-500 dark:border-indigo-500' : 'border-[#d4c8ba] dark:border-gray-600'
             }`}
           >
             {selected && <span className="text-white text-xs">✓</span>}
           </button>
         )}
 
-        <div className="flex-shrink-0 w-10 h-10 bg-slate-100 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
-          <Package className="w-5 h-5 text-slate-400" />
+        <div className="flex-shrink-0 w-10 h-10 bg-[#f0ebe4] dark:bg-gray-800 rounded-xl flex items-center justify-center">
+          <Package className="w-5 h-5 text-[#b0a090] dark:text-gray-500" />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-800 dark:text-white">#{box.box_number}</span>
+            <span className="font-semibold text-[#5a4e42] dark:text-white">#{box.box_number}</span>
             {box.label && (
-              <span className="text-sm text-slate-500 dark:text-slate-400 truncate">{box.label}</span>
+              <span className="text-sm text-[#8a7e72] dark:text-gray-400 truncate">{box.label}</span>
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <StatusBadge status={box.status} />
             {room && (
-              <span className="text-xs text-slate-400 truncate">{room.name}</span>
+              <span className="text-xs text-[#b0a090] dark:text-gray-500 truncate">{room.name}</span>
             )}
           </div>
           {(box.ai_summary || box.manual_contents) && (
-            <p className="text-xs text-slate-400 mt-1 truncate">
+            <p className="text-xs text-[#b0a090] dark:text-gray-500 mt-1 truncate">
               {box.manual_contents || box.ai_summary}
             </p>
           )}
@@ -71,21 +73,21 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
 
         <div className="flex items-center gap-1 flex-shrink-0">
           {box.is_fragile && (
-            <AlertTriangle className="w-4 h-4 text-red-500" />
+            <AlertTriangle className="w-4 h-4 text-[#e8928a] dark:text-red-400" />
           )}
           {box.is_priority && (
-            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+            <Star className="w-4 h-4 text-[#d4a03a] dark:text-yellow-400 fill-[#f0d58c] dark:fill-yellow-400" />
           )}
           {showAdvance && nextStatuses.length > 0 ? (
             <button
               onClick={handleAdvance}
-              className="ml-1 p-1.5 rounded-full bg-slate-100 dark:bg-slate-700/50 active:bg-slate-200 dark:active:bg-slate-600 transition-colors"
+              className="ml-1 p-1.5 rounded-full bg-[#f0ebe4] dark:bg-gray-800 active:bg-[#e8ddd0] dark:active:bg-gray-700 transition-colors"
               title={`Mark as ${getStatusLabel(nextStatuses[0])}`}
             >
-              <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              <ArrowRight className="w-4 h-4 text-[#8a7e72] dark:text-gray-400" />
             </button>
           ) : (
-            <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 ml-1" />
+            <ChevronRight className="w-4 h-4 text-[#d4c8ba] dark:text-gray-600 ml-1" />
           )}
         </div>
       </div>
