@@ -217,6 +217,7 @@ export const store = {
       status: 'packed',
       is_fragile: data.is_fragile || false,
       is_priority: data.is_priority || false,
+      is_temporary_storage: data.is_temporary_storage || false,
       handling_notes: data.handling_notes || '',
       ai_summary: data.ai_summary || '',
       manual_contents: data.manual_contents || '',

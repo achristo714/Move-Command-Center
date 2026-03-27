@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Package, AlertTriangle, Star, ChevronRight, ArrowRight } from 'lucide-react'
+import { Package, AlertTriangle, Star, ChevronRight, ArrowRight, Warehouse } from 'lucide-react'
 import { motion } from 'framer-motion'
 import StatusBadge from './StatusBadge'
 import { getNextStatuses, getStatusLabel } from '../lib/constants'
@@ -78,6 +78,9 @@ export default function BoxCard({ box, showAdvance = true, selectable = false, s
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
+          {box.is_temporary_storage && (
+            <Warehouse className="w-4 h-4 text-orange-400 dark:text-orange-400" />
+          )}
           {box.is_fragile && (
             <AlertTriangle className="w-4 h-4 text-[#e8928a] dark:text-red-400" />
           )}

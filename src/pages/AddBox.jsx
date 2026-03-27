@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Camera, Upload, X, AlertTriangle, Star, ArrowLeft, Loader2, Pen, Sparkles, Tag } from 'lucide-react'
+import { Camera, Upload, X, AlertTriangle, Star, ArrowLeft, Loader2, Pen, Sparkles, Tag, Warehouse } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useRooms } from '../hooks/useStore'
 import store from '../lib/store'
@@ -20,6 +20,7 @@ export default function AddBox() {
   const [roomId, setRoomId] = useState('')
   const [isFragile, setIsFragile] = useState(false)
   const [isPriority, setIsPriority] = useState(false)
+  const [isTempStorage, setIsTempStorage] = useState(false)
   const [handlingNotes, setHandlingNotes] = useState('')
   const [manualContents, setManualContents] = useState('')
   const [boxSize, setBoxSize] = useState('')
@@ -113,6 +114,7 @@ export default function AddBox() {
       destination_room_id: roomId || null,
       is_fragile: isFragile,
       is_priority: isPriority,
+      is_temporary_storage: isTempStorage,
       handling_notes: handlingNotes,
       manual_contents: manualContents,
       ai_summary: aiSummary,
@@ -214,6 +216,10 @@ export default function AddBox() {
         <button onClick={() => setIsPriority(!isPriority)} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-colors ${isPriority ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-600 dark:text-yellow-400' : 'border-slate-200 dark:border-slate-600 text-slate-400'}`}>
           <Star className="w-4 h-4" />
           <span className="text-sm font-medium">Open First</span>
+        </button>
+        <button onClick={() => setIsTempStorage(!isTempStorage)} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-colors ${isTempStorage ? 'border-orange-400 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'border-slate-200 dark:border-slate-600 text-slate-400'}`}>
+          <Warehouse className="w-4 h-4" />
+          <span className="text-sm font-medium">Temp Storage</span>
         </button>
       </div>
 
