@@ -33,8 +33,11 @@ const emptyState = {
   initialized: false,
 }
 
-let state = { ...emptyState }
+// Load localStorage immediately so UI has data while Supabase loads
+const cached = loadLocal()
+let state = cached ? { ...cached, initialized: true } : { ...emptyState }
 let listeners = new Set()
+let seeded = false
 
 function notify() {
   saveLocal(state)
@@ -67,10 +70,17 @@ async function seedDefaults() {
   await supabase.from('essentials').insert(essentials)
 }
 
+// Debounce realtime reloads to prevent flicker
+let reloadTimer = null
+function debouncedReload() {
+  if (reloadTimer) clearTimeout(reloadTimer)
+  reloadTimer = setTimeout(() => { reloadTimer = null; loadFromSupabase() }, 300)
+}
+
 async function loadFromSupabase() {
   if (!isSupabaseConfigured()) return false
   try {
-    await seedDefaults()
+    if (!seeded) { await seedDefaults(); seeded = true }
 
     const [roomsRes, boxesRes, essRes, tasksRes, actRes, estRes, lqRes, clRes, furnRes] = await Promise.all([
       supabase.from('rooms').select('*').order('sort_order'),
@@ -145,18 +155,18 @@ function loadFromLocal() {
 
 async function init() {
   const loaded = await loadFromSupabase()
-  if (!loaded) loadFromLocal()
+  if (!loaded && !cached) loadFromLocal()
 
-  // Set up realtime subscriptions
+  // Set up realtime subscriptions (debounced to prevent flicker)
   if (isSupabaseConfigured()) {
     supabase.channel('changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'boxes' }, () => loadFromSupabase())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => loadFromSupabase())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'essentials' }, () => loadFromSupabase())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'room_tasks' }, () => loadFromSupabase())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'landlord_questions' }, () => loadFromSupabase())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'move_checklist' }, () => loadFromSupabase())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'furniture' }, () => loadFromSupabase())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'boxes' }, () => debouncedReload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => debouncedReload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'essentials' }, () => debouncedReload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'room_tasks' }, () => debouncedReload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'landlord_questions' }, () => debouncedReload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'move_checklist' }, () => debouncedReload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'furniture' }, () => debouncedReload())
       .subscribe()
   }
 }
