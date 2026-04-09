@@ -272,12 +272,44 @@ export const store = {
     notify()
 
     sbWrite(async () => {
-      const insert = { ...box }
-      delete insert.box_number_override
-      if (!customNum) delete insert.box_number // serial, let DB handle when no override
-      // Keep id so local and DB IDs match
+      // Only send columns that exist in the DB schema
+      const insert = {
+        id: box.id,
+        label: box.label,
+        destination_room_id: box.destination_room_id,
+        status: box.status,
+        is_fragile: box.is_fragile,
+        is_priority: box.is_priority,
+        is_temporary_storage: box.is_temporary_storage,
+        handling_notes: box.handling_notes,
+        ai_summary: box.ai_summary,
+        manual_contents: box.manual_contents,
+        box_size: box.box_size,
+        photo_urls: box.photo_urls,
+        household_id: box.household_id,
+      }
+      if (customNum) insert.box_number = boxNum
       const { data: inserted, error } = await supabase.from('boxes').insert(insert).select().single()
-      if (error) { console.error('Failed to save box to Supabase:', error); return }
+      if (error) {
+        console.error('Failed to save box to Supabase:', error)
+        // Retry without is_temporary_storage in case column doesn't exist yet
+        if (error.code === '42703' || error.message?.includes('is_temporary_storage')) {
+          delete insert.is_temporary_storage
+          const { data: retry, error: retryErr } = await supabase.from('boxes').insert(insert).select().single()
+          if (retryErr) { console.error('Retry also failed:', retryErr); return }
+          if (retry) {
+            state = {
+              ...state,
+              boxes: state.boxes.map(b =>
+                b.id === retry.id ? { ...b, box_number: retry.box_number } : b
+              ),
+              next_box_number: Math.max(state.next_box_number, retry.box_number + 1),
+            }
+            notify()
+          }
+        }
+        return
+      }
       if (inserted) {
         // Update local box with DB-generated box_number
         state = {
@@ -310,7 +342,23 @@ export const store = {
     notify()
 
     sbWrite(async () => {
-      await supabase.from('boxes').update({ ...updates, updated_at: now() }).eq('id', id)
+      // Filter to known DB columns to avoid 400 errors
+      const dbFields = ['label', 'destination_room_id', 'status', 'is_fragile', 'is_priority',
+        'is_temporary_storage', 'handling_notes', 'ai_summary', 'manual_contents', 'box_size',
+        'photo_urls', 'box_number']
+      const dbUpdates = { updated_at: now() }
+      for (const key of dbFields) {
+        if (key in updates) dbUpdates[key] = updates[key]
+      }
+      const { error } = await supabase.from('boxes').update(dbUpdates).eq('id', id)
+      if (error) {
+        console.error('Failed to update box:', error)
+        // Retry without is_temporary_storage if column doesn't exist
+        if (error.message?.includes('is_temporary_storage')) {
+          delete dbUpdates.is_temporary_storage
+          await supabase.from('boxes').update(dbUpdates).eq('id', id)
+        }
+      }
       if (updates.status) {
         await supabase.from('activity_log').insert({
           box_id: id, action: 'status_changed',
