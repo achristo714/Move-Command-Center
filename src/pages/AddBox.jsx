@@ -137,23 +137,20 @@ export default function AddBox() {
 
       {/* Sharpie Code */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 rounded-xl border border-blue-200 dark:border-blue-500/20 p-4">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <Pen className="w-4 h-4 text-blue-500" />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Write this on the box:</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-400">#</span>
-            <input
-              type="number"
-              value={boxNumber}
-              onChange={e => setBoxNumber(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-16 text-sm text-center font-mono font-bold border border-blue-200 dark:border-blue-500/30 rounded-lg px-2 py-1 bg-white/70 dark:bg-slate-800/50 text-blue-700 dark:text-blue-400"
-            />
-          </div>
+        <div className="flex items-center gap-2 mb-1">
+          <Pen className="w-4 h-4 text-blue-500" />
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Write this on the box:</span>
         </div>
-        <div className="text-3xl font-mono font-bold text-blue-700 dark:text-blue-400 tracking-wider">
-          {sharpieCode}
+        <div className="flex items-baseline gap-1">
+          <span className="text-3xl font-mono font-bold text-blue-700 dark:text-blue-400 tracking-wider">
+            {selectedRoom ? selectedRoom.name.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() : 'BOX'}-
+          </span>
+          <input
+            type="number"
+            value={boxNumber}
+            onChange={e => setBoxNumber(Math.max(1, parseInt(e.target.value) || 1))}
+            className="w-20 text-3xl font-mono font-bold bg-transparent border-b-2 border-blue-300 dark:border-blue-500/50 text-blue-700 dark:text-blue-400 tracking-wider outline-none focus:border-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
         </div>
         <p className="text-xs text-slate-400 mt-1">
           {selectedRoom ? selectedRoom.name : 'Select a room below to generate code'}
