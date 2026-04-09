@@ -36,6 +36,11 @@ const emptyState = {
 // Load localStorage immediately so UI has data while Supabase loads
 const cached = loadLocal()
 let state = cached ? { ...cached, initialized: true } : { ...emptyState }
+// Recompute next_box_number from cached boxes to prevent stale numbering
+if (state.boxes && state.boxes.length > 0) {
+  const maxNum = state.boxes.reduce((max, b) => Math.max(max, b.box_number || 0), 0)
+  state.next_box_number = maxNum + 1
+}
 let listeners = new Set()
 let seeded = false
 
@@ -72,9 +77,29 @@ async function seedDefaults() {
 
 // Debounce realtime reloads to prevent flicker
 let reloadTimer = null
+// Suppress reloads triggered by our own writes
+let writingCount = 0
+
 function debouncedReload() {
+  if (writingCount > 0) return  // Skip — this event is from our own write
   if (reloadTimer) clearTimeout(reloadTimer)
   reloadTimer = setTimeout(() => { reloadTimer = null; loadFromSupabase() }, 300)
+}
+
+// Wrap Supabase writes to suppress self-triggered realtime reloads
+async function sbWrite(fn) {
+  if (!isSupabaseConfigured()) return null
+  writingCount++
+  try {
+    const result = await fn()
+    // Wait for realtime event to pass before re-enabling reloads
+    setTimeout(() => { writingCount-- }, 1500)
+    return result
+  } catch (e) {
+    writingCount--
+    console.error('Supabase error:', e)
+    return null
+  }
 }
 
 async function loadFromSupabase() {
@@ -192,21 +217,20 @@ export const store = {
     const room = { id: createId(), name, sort_order: state.rooms.length, household_id: 'default' }
     state = { ...state, rooms: [...state.rooms, room] }
     notify()
-    sb(() => supabase.from('rooms').insert({ name, sort_order: room.sort_order, household_id: 'default' }))
-      .then(() => loadFromSupabase())
+    sbWrite(() => supabase.from('rooms').insert({ id: room.id, name, sort_order: room.sort_order, household_id: 'default' }))
     return room
   },
 
   removeRoom(id) {
     state = { ...state, rooms: state.rooms.filter(r => r.id !== id) }
     notify()
-    sb(() => supabase.from('rooms').delete().eq('id', id))
+    sbWrite(() => supabase.from('rooms').delete().eq('id', id))
   },
 
   renameRoom(id, newName) {
     state = { ...state, rooms: state.rooms.map(r => r.id === id ? { ...r, name: newName } : r) }
     notify()
-    sb(() => supabase.from('rooms').update({ name: newName }).eq('id', id))
+    sbWrite(() => supabase.from('rooms').update({ name: newName }).eq('id', id))
   },
 
   // Boxes
@@ -245,18 +269,25 @@ export const store = {
     }
     notify()
 
-    sb(async () => {
+    sbWrite(async () => {
       const insert = { ...box }
-      delete insert.id // let DB auto-generate
       delete insert.box_number // serial, let DB handle
+      // Keep id so local and DB IDs match
       const { data: inserted } = await supabase.from('boxes').insert(insert).select().single()
       if (inserted) {
-        // Log activity with real ID
+        // Update local box with DB-generated box_number
+        state = {
+          ...state,
+          boxes: state.boxes.map(b =>
+            b.id === inserted.id ? { ...b, box_number: inserted.box_number } : b
+          ),
+          next_box_number: Math.max(state.next_box_number, inserted.box_number + 1),
+        }
+        notify()
         await supabase.from('activity_log').insert({
           box_id: inserted.id, action: 'created',
           details: { box_number: inserted.box_number }, household_id: 'default',
         })
-        await loadFromSupabase()
       }
     })
 
@@ -274,10 +305,9 @@ export const store = {
     if (updates.status) logActivity(id, 'status_changed', { status: updates.status })
     notify()
 
-    sb(async () => {
+    sbWrite(async () => {
       await supabase.from('boxes').update({ ...updates, updated_at: now() }).eq('id', id)
       if (updates.status) {
-        const box = state.boxes.find(b => b.id === id)
         await supabase.from('activity_log').insert({
           box_id: id, action: 'status_changed',
           details: { status: updates.status }, household_id: 'default',
@@ -289,7 +319,7 @@ export const store = {
   deleteBox(id) {
     state = { ...state, boxes: state.boxes.filter(b => b.id !== id) }
     notify()
-    sb(() => supabase.from('boxes').delete().eq('id', id))
+    sbWrite(() => supabase.from('boxes').delete().eq('id', id))
   },
 
   advanceStatus(id) {
@@ -308,7 +338,7 @@ export const store = {
       ),
     }
     notify()
-    sb(async () => {
+    sbWrite(async () => {
       for (const id of ids) {
         await supabase.from('boxes').update({ status, updated_at: now() }).eq('id', id)
       }
@@ -343,22 +373,21 @@ export const store = {
       ),
     }
     notify()
-    sb(() => supabase.from('essentials').update({ is_packed: newVal }).eq('id', id))
+    sbWrite(() => supabase.from('essentials').update({ is_packed: newVal }).eq('id', id))
   },
 
   addEssential(item_name) {
     const item = { id: createId(), item_name, is_packed: false, linked_box_id: null, sort_order: state.essentials.length, household_id: 'default' }
     state = { ...state, essentials: [...state.essentials, item] }
     notify()
-    sb(() => supabase.from('essentials').insert({ item_name, is_packed: false, sort_order: item.sort_order, household_id: 'default' }))
-      .then(() => loadFromSupabase())
+    sbWrite(() => supabase.from('essentials').insert({ id: item.id, item_name, is_packed: false, sort_order: item.sort_order, household_id: 'default' }))
     return item
   },
 
   removeEssential(id) {
     state = { ...state, essentials: state.essentials.filter(e => e.id !== id) }
     notify()
-    sb(() => supabase.from('essentials').delete().eq('id', id))
+    sbWrite(() => supabase.from('essentials').delete().eq('id', id))
   },
 
   // Room estimates
@@ -369,7 +398,7 @@ export const store = {
   setRoomEstimate(roomId, count) {
     state = { ...state, room_estimates: { ...state.room_estimates, [roomId]: count } }
     notify()
-    sb(async () => {
+    sbWrite(async () => {
       const { data: existing } = await supabase.from('room_estimates').select('id').eq('room_id', roomId).limit(1)
       if (existing && existing.length > 0) {
         await supabase.from('room_estimates').update({ estimated_boxes: count, updated_at: now() }).eq('room_id', roomId)
@@ -388,8 +417,7 @@ export const store = {
     const task = { id: createId(), room_id: roomId, task_text: text, is_done: false, phase, sort_order: state.room_tasks.filter(t => t.room_id === roomId).length, household_id: 'default' }
     state = { ...state, room_tasks: [...state.room_tasks, task] }
     notify()
-    sb(() => supabase.from('room_tasks').insert({ room_id: roomId, task_text: text, is_done: false, phase, sort_order: task.sort_order, household_id: 'default' }))
-      .then(() => loadFromSupabase())
+    sbWrite(() => supabase.from('room_tasks').insert({ id: task.id, room_id: roomId, task_text: text, is_done: false, phase, sort_order: task.sort_order, household_id: 'default' }))
     return task
   },
 
@@ -402,13 +430,13 @@ export const store = {
       room_tasks: state.room_tasks.map(t => t.id === id ? { ...t, is_done: newVal } : t),
     }
     notify()
-    sb(() => supabase.from('room_tasks').update({ is_done: newVal }).eq('id', id))
+    sbWrite(() => supabase.from('room_tasks').update({ is_done: newVal }).eq('id', id))
   },
 
   removeRoomTask(id) {
     state = { ...state, room_tasks: state.room_tasks.filter(t => t.id !== id) }
     notify()
-    sb(() => supabase.from('room_tasks').delete().eq('id', id))
+    sbWrite(() => supabase.from('room_tasks').delete().eq('id', id))
   },
 
   // Landlord questions
@@ -420,8 +448,7 @@ export const store = {
     const item = { id: createId(), text, category, is_answered: false, answer: '', sort_order: (state.landlord_questions || []).length, created_at: now(), household_id: 'default' }
     state = { ...state, landlord_questions: [...(state.landlord_questions || []), item] }
     notify()
-    sb(() => supabase.from('landlord_questions').insert({ text, category, is_answered: false, answer: '', sort_order: item.sort_order, household_id: 'default' }))
-      .then(() => loadFromSupabase())
+    sbWrite(() => supabase.from('landlord_questions').insert({ id: item.id, text, category, is_answered: false, answer: '', sort_order: item.sort_order, household_id: 'default' }))
     return item
   },
 
@@ -433,7 +460,7 @@ export const store = {
       ),
     }
     notify()
-    sb(() => supabase.from('landlord_questions').update(updates).eq('id', id))
+    sbWrite(() => supabase.from('landlord_questions').update(updates).eq('id', id))
   },
 
   toggleLandlordQuestion(id) {
@@ -447,13 +474,13 @@ export const store = {
       ),
     }
     notify()
-    sb(() => supabase.from('landlord_questions').update({ is_answered: newVal }).eq('id', id))
+    sbWrite(() => supabase.from('landlord_questions').update({ is_answered: newVal }).eq('id', id))
   },
 
   removeLandlordQuestion(id) {
     state = { ...state, landlord_questions: (state.landlord_questions || []).filter(q => q.id !== id) }
     notify()
-    sb(() => supabase.from('landlord_questions').delete().eq('id', id))
+    sbWrite(() => supabase.from('landlord_questions').delete().eq('id', id))
   },
 
   // Move checklist
@@ -465,8 +492,7 @@ export const store = {
     const item = { id: createId(), text, category, is_done: false, sort_order: (state.move_checklist || []).length, created_at: now(), household_id: 'default' }
     state = { ...state, move_checklist: [...(state.move_checklist || []), item] }
     notify()
-    sb(() => supabase.from('move_checklist').insert({ text, category, is_done: false, sort_order: item.sort_order, household_id: 'default' }))
-      .then(() => loadFromSupabase())
+    sbWrite(() => supabase.from('move_checklist').insert({ id: item.id, text, category, is_done: false, sort_order: item.sort_order, household_id: 'default' }))
     return item
   },
 
@@ -481,7 +507,7 @@ export const store = {
       ),
     }
     notify()
-    sb(() => supabase.from('move_checklist').update({ is_done: newVal }).eq('id', id))
+    sbWrite(() => supabase.from('move_checklist').update({ is_done: newVal }).eq('id', id))
   },
 
   updateChecklistItem(id, updates) {
@@ -492,13 +518,13 @@ export const store = {
       ),
     }
     notify()
-    sb(() => supabase.from('move_checklist').update(updates).eq('id', id))
+    sbWrite(() => supabase.from('move_checklist').update(updates).eq('id', id))
   },
 
   removeChecklistItem(id) {
     state = { ...state, move_checklist: (state.move_checklist || []).filter(item => item.id !== id) }
     notify()
-    sb(() => supabase.from('move_checklist').delete().eq('id', id))
+    sbWrite(() => supabase.from('move_checklist').delete().eq('id', id))
   },
 
   // Furniture
@@ -510,8 +536,7 @@ export const store = {
     const item = { id: createId(), name, room_id, size, needs_disassembly, notes, created_at: now(), household_id: 'default' }
     state = { ...state, furniture: [...(state.furniture || []), item] }
     notify()
-    sb(() => supabase.from('furniture').insert({ name, room_id, size, needs_disassembly, notes, household_id: 'default' }))
-      .then(() => loadFromSupabase())
+    sbWrite(() => supabase.from('furniture').insert({ id: item.id, name, room_id, size, needs_disassembly, notes, household_id: 'default' }))
     return item
   },
 
@@ -523,13 +548,13 @@ export const store = {
       ),
     }
     notify()
-    sb(() => supabase.from('furniture').update(updates).eq('id', id))
+    sbWrite(() => supabase.from('furniture').update(updates).eq('id', id))
   },
 
   removeFurniture(id) {
     state = { ...state, furniture: (state.furniture || []).filter(f => f.id !== id) }
     notify()
-    sb(() => supabase.from('furniture').delete().eq('id', id))
+    sbWrite(() => supabase.from('furniture').delete().eq('id', id))
   },
 
   // Activity log
@@ -559,7 +584,7 @@ export const store = {
     state = { ...emptyState, initialized: true }
     notify()
     if (isSupabaseConfigured()) {
-      sb(async () => {
+      sbWrite(async () => {
         await supabase.from('activity_log').delete().neq('id', '')
         await supabase.from('room_tasks').delete().neq('id', '')
         await supabase.from('room_estimates').delete().neq('id', '')
