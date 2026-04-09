@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, Filter, ArrowUpDown, CheckSquare, X } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
 import BoxCard from '../components/BoxCard'
-import { useBoxes, useRooms } from '../hooks/useStore'
+import { useBoxes, useRooms, useLoading } from '../hooks/useStore'
 import { STATUS_OPTIONS } from '../lib/constants'
 
 export default function BoxList() {
   const navigate = useNavigate()
   const { boxes, bulkUpdateStatus } = useBoxes()
   const { rooms } = useRooms()
+  const loading = useLoading()
   const [filterOpen, setFilterOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState('')
   const [roomFilter, setRoomFilter] = useState('')
@@ -139,14 +140,21 @@ export default function BoxList() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-4xl mb-3">📦</div>
-          <h3 className="font-medium text-slate-600 dark:text-slate-300">No boxes yet</h3>
-          <p className="text-sm text-slate-400 mt-1">Let's get packing!</p>
-          <button onClick={() => navigate('/boxes/new')} className="mt-4 bg-blue-500 text-white rounded-lg px-4 py-2 text-sm font-medium">
-            Add your first box
-          </button>
-        </div>
+        loading ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
+            <p className="text-sm text-slate-400">Loading boxes...</p>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-4xl mb-3">📦</div>
+            <h3 className="font-medium text-slate-600 dark:text-slate-300">No boxes yet</h3>
+            <p className="text-sm text-slate-400 mt-1">Let's get packing!</p>
+            <button onClick={() => navigate('/boxes/new')} className="mt-4 bg-blue-500 text-white rounded-lg px-4 py-2 text-sm font-medium">
+              Add your first box
+            </button>
+          </div>
+        )
       )}
     </div>
   )

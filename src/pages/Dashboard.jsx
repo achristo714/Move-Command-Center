@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Package, AlertTriangle, Star as StarIcon, Truck, Archive, CheckCircle2, Clock, ArrowRight, Calendar, Timer, MessageCircle, ClipboardList, Calculator, Home, ListOrdered, Image } from 'lucide-react'
 import { motion } from 'framer-motion'
 import ProgressRing from '../components/ProgressRing'
-import { useStats, useRooms, useActivityLog, useEssentials } from '../hooks/useStore'
+import { useStats, useRooms, useActivityLog, useEssentials, useLoading } from '../hooks/useStore'
 import { getStatusColor, getStatusLabel, STATUS_OPTIONS } from '../lib/constants'
 import { useTheme } from '../hooks/useTheme'
 import { Flower, Leaf, Bunny, Bird, SmallFlower, TinyHouse, Sparkle, Butterfly, WavyDivider, ScatteredPattern } from '../components/Decorations'
@@ -40,6 +40,7 @@ export default function Dashboard() {
   const activity = useActivityLog()
   const { essentials } = useEssentials()
   const { dark } = useTheme()
+  const loading = useLoading()
 
   const essentialsPacked = essentials.filter(e => e.is_packed).length
   const essentialsTotal = essentials.length
@@ -53,6 +54,15 @@ export default function Dashboard() {
   }
 
   const progressColor = dark ? '#818cf8' : '#95c9a8'
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
+        <p className="text-sm text-slate-400">Loading your move...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-5">

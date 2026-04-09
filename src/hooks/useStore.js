@@ -10,6 +10,11 @@ export function useStore() {
   return { state, store }
 }
 
+export function useLoading() {
+  const { state } = useStore()
+  return !state.initialized
+}
+
 export function useBoxes() {
   const { store: s } = useStore()
   return {
