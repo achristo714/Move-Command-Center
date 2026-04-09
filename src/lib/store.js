@@ -273,7 +273,8 @@ export const store = {
       const insert = { ...box }
       delete insert.box_number // serial, let DB handle
       // Keep id so local and DB IDs match
-      const { data: inserted } = await supabase.from('boxes').insert(insert).select().single()
+      const { data: inserted, error } = await supabase.from('boxes').insert(insert).select().single()
+      if (error) { console.error('Failed to save box to Supabase:', error); return }
       if (inserted) {
         // Update local box with DB-generated box_number
         state = {

@@ -21,6 +21,7 @@ create table if not exists boxes (
   status text not null default 'packed',
   is_fragile boolean not null default false,
   is_priority boolean not null default false,
+  is_temporary_storage boolean not null default false,
   handling_notes text default '',
   ai_summary text default '',
   manual_contents text default '',
