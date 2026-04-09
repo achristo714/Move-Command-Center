@@ -243,9 +243,11 @@ export const store = {
   },
 
   addBox(data) {
+    const customNum = data.box_number_override
+    const boxNum = customNum || state.next_box_number
     const box = {
       id: createId(),
-      box_number: state.next_box_number,
+      box_number: boxNum,
       label: data.label || '',
       destination_room_id: data.destination_room_id || null,
       status: 'packed',
@@ -265,13 +267,14 @@ export const store = {
     state = {
       ...state,
       boxes: [...state.boxes, box],
-      next_box_number: state.next_box_number + 1,
+      next_box_number: Math.max(state.next_box_number, boxNum) + (customNum ? 0 : 1),
     }
     notify()
 
     sbWrite(async () => {
       const insert = { ...box }
-      delete insert.box_number // serial, let DB handle
+      delete insert.box_number_override
+      if (!customNum) delete insert.box_number // serial, let DB handle when no override
       // Keep id so local and DB IDs match
       const { data: inserted, error } = await supabase.from('boxes').insert(insert).select().single()
       if (error) { console.error('Failed to save box to Supabase:', error); return }

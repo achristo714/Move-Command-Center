@@ -16,6 +16,7 @@ export default function AddBox() {
 
   const nextNumber = store.getState().next_box_number
 
+  const [boxNumber, setBoxNumber] = useState(nextNumber)
   const [label, setLabel] = useState('')
   const [roomId, setRoomId] = useState('')
   const [isFragile, setIsFragile] = useState(false)
@@ -29,7 +30,7 @@ export default function AddBox() {
   const [aiSummary, setAiSummary] = useState('')
 
   const selectedRoom = rooms.find(r => r.id === roomId)
-  const sharpieCode = generateBoxCode(nextNumber, selectedRoom?.name)
+  const sharpieCode = generateBoxCode(boxNumber, selectedRoom?.name)
 
   const [suggestingLabel, setSuggestingLabel] = useState(false)
 
@@ -110,6 +111,7 @@ export default function AddBox() {
 
   const handleSave = () => {
     const box = store.addBox({
+      box_number_override: boxNumber !== nextNumber ? boxNumber : null,
       label: label || sharpieCode,
       destination_room_id: roomId || null,
       is_fragile: isFragile,
@@ -130,14 +132,25 @@ export default function AddBox() {
         <button onClick={() => navigate(-1)} className="p-1">
           <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
         </button>
-        <h1 className="text-xl font-bold text-slate-800 dark:text-white">Add Box #{nextNumber}</h1>
+        <h1 className="text-xl font-bold text-slate-800 dark:text-white">Add Box #{boxNumber}</h1>
       </div>
 
       {/* Sharpie Code */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 rounded-xl border border-blue-200 dark:border-blue-500/20 p-4">
-        <div className="flex items-center gap-2 mb-1">
-          <Pen className="w-4 h-4 text-blue-500" />
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Write this on the box:</span>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <Pen className="w-4 h-4 text-blue-500" />
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Write this on the box:</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-slate-400">#</span>
+            <input
+              type="number"
+              value={boxNumber}
+              onChange={e => setBoxNumber(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-16 text-sm text-center font-mono font-bold border border-blue-200 dark:border-blue-500/30 rounded-lg px-2 py-1 bg-white/70 dark:bg-slate-800/50 text-blue-700 dark:text-blue-400"
+            />
+          </div>
         </div>
         <div className="text-3xl font-mono font-bold text-blue-700 dark:text-blue-400 tracking-wider">
           {sharpieCode}
