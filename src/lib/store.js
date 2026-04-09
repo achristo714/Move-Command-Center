@@ -35,7 +35,9 @@ const emptyState = {
 
 // Load localStorage immediately so UI has data while Supabase loads
 const cached = loadLocal()
-let state = cached ? { ...cached, initialized: true } : { ...emptyState }
+// Start with cached data for display, but DON'T mark as initialized
+// until Supabase has actually responded (or failed)
+let state = cached ? { ...cached, initialized: false } : { ...emptyState }
 // Recompute next_box_number from cached boxes to prevent stale numbering
 if (state.boxes && state.boxes.length > 0) {
   const maxNum = state.boxes.reduce((max, b) => Math.max(max, b.box_number || 0), 0)
@@ -158,6 +160,9 @@ async function loadFromSupabase() {
     return true
   } catch (e) {
     console.error('Failed to load from Supabase:', e)
+    // Mark initialized even on failure so spinner stops
+    state = { ...state, initialized: true }
+    notify()
     return false
   }
 }
