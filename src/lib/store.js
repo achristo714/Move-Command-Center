@@ -43,6 +43,8 @@ if (state.boxes && state.boxes.length > 0) {
 }
 let listeners = new Set()
 let seeded = false
+// Track boxes that haven't synced to Supabase yet
+let pendingBoxIds = new Set()
 
 function notify() {
   saveLocal(state)
@@ -132,11 +134,16 @@ async function loadFromSupabase() {
     const room_estimates = {}
     estimates.forEach(e => { room_estimates[e.room_id] = e.estimated_boxes })
 
-    const maxBoxNum = boxes.reduce((max, b) => Math.max(max, b.box_number || 0), 0)
+    // Merge: keep any local boxes that haven't synced to Supabase yet
+    const remoteBoxIds = new Set(boxes.map(b => b.id))
+    const unsyncedBoxes = state.boxes.filter(b => pendingBoxIds.has(b.id) && !remoteBoxIds.has(b.id))
+    const mergedBoxes = [...boxes, ...unsyncedBoxes]
+
+    const maxBoxNum = mergedBoxes.reduce((max, b) => Math.max(max, b.box_number || 0), 0)
 
     state = {
       rooms,
-      boxes,
+      boxes: mergedBoxes,
       essentials,
       room_estimates,
       room_tasks,
@@ -271,8 +278,10 @@ export const store = {
     }
     notify()
 
+    pendingBoxIds.add(box.id)
+
     sbWrite(async () => {
-      // Only send columns that exist in the DB schema
+      // Only columns from original schema — no is_temporary_storage
       const insert = {
         id: box.id,
         label: box.label,
@@ -280,7 +289,6 @@ export const store = {
         status: box.status,
         is_fragile: box.is_fragile,
         is_priority: box.is_priority,
-        is_temporary_storage: box.is_temporary_storage,
         handling_notes: box.handling_notes,
         ai_summary: box.ai_summary,
         manual_contents: box.manual_contents,
@@ -289,29 +297,21 @@ export const store = {
         household_id: box.household_id,
       }
       if (customNum) insert.box_number = boxNum
-      const { data: inserted, error } = await supabase.from('boxes').insert(insert).select().single()
-      if (error) {
-        console.error('Failed to save box to Supabase:', error)
-        // Retry without is_temporary_storage in case column doesn't exist yet
-        if (error.code === '42703' || error.message?.includes('is_temporary_storage')) {
-          delete insert.is_temporary_storage
-          const { data: retry, error: retryErr } = await supabase.from('boxes').insert(insert).select().single()
-          if (retryErr) { console.error('Retry also failed:', retryErr); return }
-          if (retry) {
-            state = {
-              ...state,
-              boxes: state.boxes.map(b =>
-                b.id === retry.id ? { ...b, box_number: retry.box_number } : b
-              ),
-              next_box_number: Math.max(state.next_box_number, retry.box_number + 1),
-            }
-            notify()
-          }
-        }
-        return
+
+      // Try insert, fall back without destination_room_id if FK fails
+      let { data: inserted, error } = await supabase.from('boxes').insert(insert).select().single()
+      if (error && insert.destination_room_id) {
+        console.warn('Box insert failed, retrying without room FK:', error.message)
+        insert.destination_room_id = null
+        const r = await supabase.from('boxes').insert(insert).select().single()
+        inserted = r.data; error = r.error
       }
+      if (error) {
+        console.error('Box insert failed:', error)
+        return  // Box stays in pendingBoxIds so it won't be wiped
+      }
+      pendingBoxIds.delete(box.id)
       if (inserted) {
-        // Update local box with DB-generated box_number
         state = {
           ...state,
           boxes: state.boxes.map(b =>
@@ -323,7 +323,7 @@ export const store = {
         await supabase.from('activity_log').insert({
           box_id: inserted.id, action: 'created',
           details: { box_number: inserted.box_number }, household_id: 'default',
-        })
+        }).catch(() => {})
       }
     })
 
@@ -342,23 +342,15 @@ export const store = {
     notify()
 
     sbWrite(async () => {
-      // Filter to known DB columns to avoid 400 errors
+      // Only send columns from original DB schema
       const dbFields = ['label', 'destination_room_id', 'status', 'is_fragile', 'is_priority',
-        'is_temporary_storage', 'handling_notes', 'ai_summary', 'manual_contents', 'box_size',
-        'photo_urls', 'box_number']
+        'handling_notes', 'ai_summary', 'manual_contents', 'box_size', 'photo_urls', 'box_number']
       const dbUpdates = { updated_at: now() }
       for (const key of dbFields) {
         if (key in updates) dbUpdates[key] = updates[key]
       }
       const { error } = await supabase.from('boxes').update(dbUpdates).eq('id', id)
-      if (error) {
-        console.error('Failed to update box:', error)
-        // Retry without is_temporary_storage if column doesn't exist
-        if (error.message?.includes('is_temporary_storage')) {
-          delete dbUpdates.is_temporary_storage
-          await supabase.from('boxes').update(dbUpdates).eq('id', id)
-        }
-      }
+      if (error) console.error('Failed to update box:', error)
       if (updates.status) {
         await supabase.from('activity_log').insert({
           box_id: id, action: 'status_changed',
