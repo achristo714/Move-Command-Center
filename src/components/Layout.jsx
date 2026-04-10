@@ -4,6 +4,7 @@ import { Home, Package, MapPin, Search, Image, Plus, Settings, Moon, Sun, Menu, 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../hooks/useTheme'
 import { SmallFlower } from './Decorations'
+import { useStore } from '../hooks/useStore'
 
 const navItems = [
   { to: '/', icon: Home, label: 'Home' },
@@ -34,6 +35,7 @@ export default function Layout() {
   const location = useLocation()
   const { dark, toggle } = useTheme()
   const [moreOpen, setMoreOpen] = useState(false)
+  const { state: appState } = useStore()
   const isPrintPage = location.pathname.startsWith('/print') || location.pathname === '/labels'
 
   if (isPrintPage) {
@@ -125,6 +127,11 @@ export default function Layout() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
           >
+            {appState.lastError && (
+              <div className="mb-3 bg-red-500/10 border border-red-400/30 rounded-xl px-4 py-2 text-sm text-red-500 dark:text-red-400">
+                {appState.lastError}
+              </div>
+            )}
             <Outlet />
           </motion.div>
         </AnimatePresence>

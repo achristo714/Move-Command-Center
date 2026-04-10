@@ -45,8 +45,12 @@ if (state.boxes && state.boxes.length > 0) {
 }
 let listeners = new Set()
 let seeded = false
-// Track boxes that haven't synced to Supabase yet
-let pendingBoxIds = new Set()
+// Track boxes that haven't synced to Supabase yet — persisted to localStorage
+const PENDING_KEY = 'move-pending-box-ids'
+let pendingBoxIds = new Set(JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'))
+function savePending() {
+  localStorage.setItem(PENDING_KEY, JSON.stringify([...pendingBoxIds]))
+}
 
 function notify() {
   saveLocal(state)
@@ -284,13 +288,13 @@ export const store = {
     notify()
 
     pendingBoxIds.add(box.id)
+    savePending()
 
     sbWrite(async () => {
-      // Only columns from original schema — no is_temporary_storage
+      // Only columns from original DB schema
       const insert = {
         id: box.id,
         label: box.label,
-        destination_room_id: box.destination_room_id,
         status: box.status,
         is_fragile: box.is_fragile,
         is_priority: box.is_priority,
@@ -298,24 +302,31 @@ export const store = {
         ai_summary: box.ai_summary,
         manual_contents: box.manual_contents,
         box_size: box.box_size,
-        photo_urls: box.photo_urls,
         household_id: box.household_id,
+      }
+      // Only include room FK if it exists in Supabase rooms
+      if (box.destination_room_id) {
+        const { data: roomCheck } = await supabase.from('rooms').select('id').eq('id', box.destination_room_id).limit(1)
+        if (roomCheck && roomCheck.length > 0) insert.destination_room_id = box.destination_room_id
+      }
+      // Skip photo_urls if they're large base64 (can exceed payload limit)
+      if (box.photo_urls && box.photo_urls.length > 0) {
+        const totalSize = JSON.stringify(box.photo_urls).length
+        if (totalSize < 500000) insert.photo_urls = box.photo_urls
       }
       if (customNum) insert.box_number = boxNum
 
-      // Try insert, fall back without destination_room_id if FK fails
-      let { data: inserted, error } = await supabase.from('boxes').insert(insert).select().single()
-      if (error && insert.destination_room_id) {
-        console.warn('Box insert failed, retrying without room FK:', error.message)
-        insert.destination_room_id = null
-        const r = await supabase.from('boxes').insert(insert).select().single()
-        inserted = r.data; error = r.error
-      }
+      const { data: inserted, error } = await supabase.from('boxes').insert(insert).select().single()
       if (error) {
-        console.error('Box insert failed:', error)
-        return  // Box stays in pendingBoxIds so it won't be wiped
+        console.error('BOX INSERT FAILED:', error.message, error.code, error.details)
+        // Expose error on the store so UI can show it
+        state = { ...state, lastError: `Sync failed: ${error.message}` }
+        notify()
+        return  // Box stays in pendingBoxIds — won't be wiped on reload
       }
       pendingBoxIds.delete(box.id)
+      savePending()
+      state = { ...state, lastError: null }
       if (inserted) {
         state = {
           ...state,
