@@ -89,8 +89,9 @@ async function sbWrite(fn) {
 async function loadFromSupabase() {
   if (!isSupabaseConfigured()) return false
   try {
-    // Load critical data sequentially to avoid overwhelming the DB
-    const boxesRes = await supabase.from('boxes').select('*').order('box_number', { ascending: false })
+    // NEVER select photo_urls in bulk — base64 images make the response 39MB+ and break JSON parsing
+    const BOX_FIELDS = 'id,box_number,label,destination_room_id,status,is_fragile,is_priority,is_temporary_storage,handling_notes,ai_summary,manual_contents,box_size,household_id,created_by,created_at,updated_at'
+    const boxesRes = await supabase.from('boxes').select(BOX_FIELDS).order('box_number', { ascending: false })
     const roomsRes = await supabase.from('rooms').select('*').order('sort_order')
 
     // Check for errors — if boxes query failed, use cache and show error
@@ -310,6 +311,25 @@ export const store = {
 
   getBox(id) {
     return state.boxes.find(b => b.id === id)
+  },
+
+  // Lazy-load photo_urls for a single box (not included in bulk load to avoid 39MB+ responses)
+  async loadBoxPhotos(id) {
+    const box = state.boxes.find(b => b.id === id)
+    if (!box) return
+    // If photos already loaded from local state, skip
+    if (box.photo_urls && box.photo_urls.length > 0) return
+    if (!isSupabaseConfigured()) return
+    try {
+      const { data } = await supabase.from('boxes').select('photo_urls').eq('id', id).single()
+      if (data && data.photo_urls && data.photo_urls.length > 0) {
+        state = {
+          ...state,
+          boxes: state.boxes.map(b => b.id === id ? { ...b, photo_urls: data.photo_urls } : b),
+        }
+        notify()
+      }
+    } catch {}
   },
 
   addBox(data) {

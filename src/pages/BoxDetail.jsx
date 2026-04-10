@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Edit3, Trash2, AlertTriangle, Star, Camera, X, Warehouse } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
@@ -18,6 +18,9 @@ export default function BoxDetail() {
   const box = store.getBox(id)
   const [editing, setEditing] = useState(false)
   const [editData, setEditData] = useState({})
+
+  // Lazy-load photos for this box (not included in bulk query)
+  useEffect(() => { if (id) store.loadBoxPhotos(id) }, [id])
 
   if (!box) {
     return (
