@@ -89,11 +89,9 @@ async function sbWrite(fn) {
 async function loadFromSupabase() {
   if (!isSupabaseConfigured()) return false
   try {
-    // Load critical data first (rooms + boxes only), then rest in background
-    const [roomsRes, boxesRes] = await Promise.all([
-      supabase.from('rooms').select('*').order('sort_order'),
-      supabase.from('boxes').select('*').order('box_number', { ascending: false }),
-    ])
+    // Load critical data sequentially to avoid overwhelming the DB
+    const boxesRes = await supabase.from('boxes').select('*').order('box_number', { ascending: false })
+    const roomsRes = await supabase.from('rooms').select('*').order('sort_order')
 
     // Check for errors — if boxes query failed, use cache and show error
     if (boxesRes.error) {
@@ -139,34 +137,43 @@ async function loadFromSupabase() {
   }
 }
 
-// Load non-critical tables one at a time to avoid statement timeout
+// Load non-critical tables one at a time with delays to avoid statement timeout
 async function loadSecondaryData() {
+  const delay = () => new Promise(r => setTimeout(r, 300))
+  const load = async (query) => {
+    try { const res = await query; return res.data } catch { return null }
+  }
   try {
-    const load = async (table, query) => {
-      try { return await query } catch { return { data: null } }
-    }
-    const essRes = await load('essentials', supabase.from('essentials').select('*').order('sort_order'))
-    const estRes = await load('room_estimates', supabase.from('room_estimates').select('*'))
-    const tasksRes = await load('room_tasks', supabase.from('room_tasks').select('*').order('sort_order'))
-    const actRes = await load('activity_log', supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(50))
-    const lqRes = await load('landlord_questions', supabase.from('landlord_questions').select('*').order('sort_order'))
-    const clRes = await load('move_checklist', supabase.from('move_checklist').select('*').order('sort_order'))
-    const furnRes = await load('furniture', supabase.from('furniture').select('*').order('created_at'))
+    const essentials = await load(supabase.from('essentials').select('*').order('sort_order'))
+    if (essentials) { state = { ...state, essentials }; notify() }
+    await delay()
 
-    const room_estimates = {}
-    if (estRes.data) estRes.data.forEach(e => { room_estimates[e.room_id] = e.estimated_boxes })
-
-    state = {
-      ...state,
-      essentials: essRes.data || state.essentials,
-      room_estimates: estRes.data ? room_estimates : state.room_estimates,
-      room_tasks: tasksRes.data || state.room_tasks,
-      activity_log: actRes.data || state.activity_log,
-      landlord_questions: lqRes.data || state.landlord_questions,
-      move_checklist: clRes.data || state.move_checklist,
-      furniture: furnRes.data || state.furniture,
+    const estimates = await load(supabase.from('room_estimates').select('*'))
+    if (estimates) {
+      const room_estimates = {}
+      estimates.forEach(e => { room_estimates[e.room_id] = e.estimated_boxes })
+      state = { ...state, room_estimates }; notify()
     }
-    notify()
+    await delay()
+
+    const room_tasks = await load(supabase.from('room_tasks').select('*').order('sort_order'))
+    if (room_tasks) { state = { ...state, room_tasks }; notify() }
+    await delay()
+
+    const activity_log = await load(supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(50))
+    if (activity_log) { state = { ...state, activity_log }; notify() }
+    await delay()
+
+    const landlord_questions = await load(supabase.from('landlord_questions').select('*').order('sort_order'))
+    if (landlord_questions) { state = { ...state, landlord_questions }; notify() }
+    await delay()
+
+    const move_checklist = await load(supabase.from('move_checklist').select('*').order('sort_order'))
+    if (move_checklist) { state = { ...state, move_checklist }; notify() }
+    await delay()
+
+    const furniture = await load(supabase.from('furniture').select('*').order('created_at'))
+    if (furniture) { state = { ...state, furniture }; notify() }
   } catch (e) {
     console.error('Secondary data load failed (non-critical):', e)
   }
@@ -226,32 +233,25 @@ async function init() {
 }
 
 async function retryPendingBoxes() {
+  // Wait 5 seconds before retrying — give DB time to breathe after initial load
+  await new Promise(r => setTimeout(r, 5000))
   const pendingIds = [...pendingBoxIds]
+  if (pendingIds.length === 0) return
   for (const id of pendingIds) {
     const box = state.boxes.find(b => b.id === id)
-    if (!box) { pendingBoxIds.delete(id); continue }
+    if (!box) { pendingBoxIds.delete(id); savePending(); continue }
     try {
-      // Check if it already exists in Supabase
-      const { data: existing } = await supabase.from('boxes').select('id').eq('id', id).limit(1)
-      if (existing && existing.length > 0) {
-        pendingBoxIds.delete(id)
-        savePending()
-        continue
-      }
-      // Try to insert
       const insert = {
-        id: box.id, label: box.label, status: box.status,
-        is_fragile: box.is_fragile, is_priority: box.is_priority,
+        id: box.id, label: box.label || '', status: box.status || 'packed',
+        is_fragile: box.is_fragile || false, is_priority: box.is_priority || false,
         is_temporary_storage: box.is_temporary_storage || false,
         handling_notes: box.handling_notes || '', ai_summary: box.ai_summary || '',
         manual_contents: box.manual_contents || '', box_size: box.box_size || null,
         household_id: box.household_id || 'default', box_number: box.box_number,
       }
-      if (box.destination_room_id) {
-        const { data: roomCheck } = await supabase.from('rooms').select('id').eq('id', box.destination_room_id).limit(1)
-        if (roomCheck && roomCheck.length > 0) insert.destination_room_id = box.destination_room_id
-      }
-      const { error } = await supabase.from('boxes').insert(insert)
+      if (box.destination_room_id) insert.destination_room_id = box.destination_room_id
+      // Use upsert to handle both insert and "already exists" cases in one query
+      const { error } = await supabase.from('boxes').upsert(insert, { onConflict: 'id' })
       if (!error) {
         pendingBoxIds.delete(id)
         savePending()
@@ -261,10 +261,8 @@ async function retryPendingBoxes() {
     } catch (e) {
       console.error('Retry sync error for box', id, ':', e)
     }
-  }
-  if (pendingBoxIds.size === 0) {
-    state = { ...state, lastError: null }
-    notify()
+    // Small delay between retries to not hammer the DB
+    await new Promise(r => setTimeout(r, 500))
   }
 }
 
