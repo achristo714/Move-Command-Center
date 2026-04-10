@@ -140,9 +140,14 @@ async function loadFromSupabase() {
     const room_estimates = {}
     estimates.forEach(e => { room_estimates[e.room_id] = e.estimated_boxes })
 
-    // Merge: keep any local boxes that haven't synced to Supabase yet
+    // Merge: keep ALL local boxes that aren't in Supabase yet (prevents data loss)
     const remoteBoxIds = new Set(boxes.map(b => b.id))
-    const unsyncedBoxes = state.boxes.filter(b => pendingBoxIds.has(b.id) && !remoteBoxIds.has(b.id))
+    const unsyncedBoxes = state.boxes.filter(b => !remoteBoxIds.has(b.id))
+    // Mark them as pending so they get retried
+    for (const b of unsyncedBoxes) {
+      pendingBoxIds.add(b.id)
+    }
+    if (unsyncedBoxes.length > 0) savePending()
     const mergedBoxes = [...boxes, ...unsyncedBoxes]
 
     const maxBoxNum = mergedBoxes.reduce((max, b) => Math.max(max, b.box_number || 0), 0)
@@ -291,13 +296,13 @@ export const store = {
     savePending()
 
     sbWrite(async () => {
-      // Only columns from original DB schema
       const insert = {
         id: box.id,
         label: box.label,
         status: box.status,
         is_fragile: box.is_fragile,
         is_priority: box.is_priority,
+        is_temporary_storage: box.is_temporary_storage,
         handling_notes: box.handling_notes,
         ai_summary: box.ai_summary,
         manual_contents: box.manual_contents,
@@ -360,7 +365,7 @@ export const store = {
     sbWrite(async () => {
       // Only send columns from original DB schema
       const dbFields = ['label', 'destination_room_id', 'status', 'is_fragile', 'is_priority',
-        'handling_notes', 'ai_summary', 'manual_contents', 'box_size', 'photo_urls', 'box_number']
+        'is_temporary_storage', 'handling_notes', 'ai_summary', 'manual_contents', 'box_size', 'photo_urls', 'box_number']
       const dbUpdates = { updated_at: now() }
       for (const key of dbFields) {
         if (key in updates) dbUpdates[key] = updates[key]

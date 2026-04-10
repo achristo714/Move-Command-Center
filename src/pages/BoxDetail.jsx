@@ -33,11 +33,18 @@ export default function BoxDetail() {
   const qrUrl = `${window.location.origin}/boxes/${box.id}`
 
   const startEdit = () => {
-    setEditData({ label: box.label, destination_room_id: box.destination_room_id || '', is_fragile: box.is_fragile, is_priority: box.is_priority, is_temporary_storage: box.is_temporary_storage || false, box_size: box.box_size || '', handling_notes: box.handling_notes, manual_contents: box.manual_contents })
+    setEditData({ box_number: String(box.box_number), label: box.label, destination_room_id: box.destination_room_id || '', is_fragile: box.is_fragile, is_priority: box.is_priority, is_temporary_storage: box.is_temporary_storage || false, box_size: box.box_size || '', handling_notes: box.handling_notes, manual_contents: box.manual_contents })
     setEditing(true)
   }
 
-  const saveEdit = () => { store.updateBox(box.id, editData); setEditing(false) }
+  const saveEdit = () => {
+    const { box_number: boxNumStr, ...rest } = editData
+    const newNum = parseInt(boxNumStr)
+    const updates = { ...rest }
+    if (newNum && newNum !== box.box_number) updates.box_number = newNum
+    store.updateBox(box.id, updates)
+    setEditing(false)
+  }
 
   const handleDelete = () => {
     if (confirm('Delete this box? This cannot be undone.')) { store.deleteBox(box.id); navigate('/boxes') }
@@ -149,6 +156,10 @@ export default function BoxDetail() {
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-lg text-slate-800 dark:text-white">Edit Box</h2>
               <button onClick={() => setEditing(false)}><X className="w-5 h-5 text-slate-400" /></button>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-600 dark:text-slate-300 block mb-1">Box Number</label>
+              <input type="text" inputMode="numeric" value={editData.box_number} onChange={e => setEditData({ ...editData, box_number: e.target.value.replace(/[^0-9]/g, '') })} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 dark:text-white font-mono" />
             </div>
             <div>
               <label className="text-sm font-medium text-slate-600 dark:text-slate-300 block mb-1">Label</label>
