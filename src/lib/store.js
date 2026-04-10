@@ -33,11 +33,11 @@ const emptyState = {
   initialized: false,
 }
 
-// Load localStorage immediately so UI has data while Supabase loads
+// Load localStorage immediately — this IS the data, shown right away
 const cached = loadLocal()
-// Start with cached data for display, but DON'T mark as initialized
-// until Supabase has actually responded (or failed)
-let state = cached ? { ...cached, initialized: false } : { ...emptyState }
+// If we have cached data, show it IMMEDIATELY (initialized: true)
+// If no cache, show spinner until Supabase responds
+let state = cached ? { ...cached, initialized: true, lastError: null } : { ...emptyState }
 // Recompute next_box_number from cached boxes to prevent stale numbering
 if (state.boxes && state.boxes.length > 0) {
   const maxNum = state.boxes.reduce((max, b) => Math.max(max, b.box_number || 0), 0)
@@ -89,40 +89,22 @@ async function sbWrite(fn) {
 async function loadFromSupabase() {
   if (!isSupabaseConfigured()) return false
   try {
-    if (!seeded) { await seedDefaults(); seeded = true }
-
-    const [roomsRes, boxesRes, essRes, tasksRes, actRes, estRes, lqRes, clRes, furnRes] = await Promise.all([
+    // Load critical data first (rooms + boxes only), then rest in background
+    const [roomsRes, boxesRes] = await Promise.all([
       supabase.from('rooms').select('*').order('sort_order'),
       supabase.from('boxes').select('*').order('box_number', { ascending: false }),
-      supabase.from('essentials').select('*').order('sort_order'),
-      supabase.from('room_tasks').select('*').order('sort_order'),
-      supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(50),
-      supabase.from('room_estimates').select('*'),
-      supabase.from('landlord_questions').select('*').order('sort_order'),
-      supabase.from('move_checklist').select('*').order('sort_order'),
-      supabase.from('furniture').select('*').order('created_at'),
     ])
 
-    // Check for errors on the boxes query specifically — this is critical
+    // Check for errors — if boxes query failed, use cache and show error
     if (boxesRes.error) {
       console.error('Supabase boxes query failed:', boxesRes.error)
-      state = { ...state, initialized: true, lastError: `DB read failed: ${boxesRes.error.message}` }
+      state = { ...state, initialized: true, lastError: `DB timeout — using cached data. (${boxesRes.error.message})` }
       notify()
-      return true // Return true so we don't fall through to loadFromLocal
+      return true
     }
 
     const rooms = roomsRes.data || state.rooms
     const boxes = boxesRes.data || []
-    const essentials = essRes.data || state.essentials
-    const room_tasks = tasksRes.data || state.room_tasks
-    const activity_log = actRes.data || state.activity_log
-    const estimates = estRes.data || []
-    const landlord_questions = lqRes.data || state.landlord_questions
-    const move_checklist = clRes.data || state.move_checklist
-    const furniture = furnRes.data || state.furniture
-
-    const room_estimates = {}
-    estimates.forEach(e => { room_estimates[e.room_id] = e.estimated_boxes })
 
     // SAFETY: keep ALL local boxes that aren't in Supabase
     const remoteBoxIds = new Set(boxes.map(b => b.id))
@@ -136,26 +118,57 @@ async function loadFromSupabase() {
     const maxBoxNum = mergedBoxes.reduce((max, b) => Math.max(max, b.box_number || 0), 0)
 
     state = {
+      ...state,
       rooms,
       boxes: mergedBoxes,
-      essentials,
-      room_estimates,
-      room_tasks,
-      activity_log,
-      landlord_questions,
-      move_checklist,
-      furniture,
       next_box_number: maxBoxNum + 1,
       initialized: true,
       lastError: null,
     }
     notify()
+
+    // Load non-critical data in background (won't block UI)
+    loadSecondaryData()
+
     return true
   } catch (e) {
     console.error('Failed to load from Supabase:', e)
     state = { ...state, initialized: true, lastError: `Load failed: ${e.message}` }
     notify()
     return false
+  }
+}
+
+// Load non-critical tables one at a time to avoid statement timeout
+async function loadSecondaryData() {
+  try {
+    const load = async (table, query) => {
+      try { return await query } catch { return { data: null } }
+    }
+    const essRes = await load('essentials', supabase.from('essentials').select('*').order('sort_order'))
+    const estRes = await load('room_estimates', supabase.from('room_estimates').select('*'))
+    const tasksRes = await load('room_tasks', supabase.from('room_tasks').select('*').order('sort_order'))
+    const actRes = await load('activity_log', supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(50))
+    const lqRes = await load('landlord_questions', supabase.from('landlord_questions').select('*').order('sort_order'))
+    const clRes = await load('move_checklist', supabase.from('move_checklist').select('*').order('sort_order'))
+    const furnRes = await load('furniture', supabase.from('furniture').select('*').order('created_at'))
+
+    const room_estimates = {}
+    if (estRes.data) estRes.data.forEach(e => { room_estimates[e.room_id] = e.estimated_boxes })
+
+    state = {
+      ...state,
+      essentials: essRes.data || state.essentials,
+      room_estimates: estRes.data ? room_estimates : state.room_estimates,
+      room_tasks: tasksRes.data || state.room_tasks,
+      activity_log: actRes.data || state.activity_log,
+      landlord_questions: lqRes.data || state.landlord_questions,
+      move_checklist: clRes.data || state.move_checklist,
+      furniture: furnRes.data || state.furniture,
+    }
+    notify()
+  } catch (e) {
+    console.error('Secondary data load failed (non-critical):', e)
   }
 }
 
@@ -186,23 +199,29 @@ function loadFromLocal() {
 // NO realtime subscriptions — they caused data wipes when Supabase returned 0 boxes.
 
 async function init() {
-  const loaded = await loadFromSupabase()
-  if (!loaded && !cached) loadFromLocal()
-  // If loaded from Supabase but had no boxes and we had cached boxes,
-  // make sure we didn't lose them (safety net)
-  if (loaded && state.boxes.length === 0 && cached && cached.boxes && cached.boxes.length > 0) {
-    console.warn('Supabase returned 0 boxes but cache had', cached.boxes.length, '— restoring from cache')
-    state = { ...state, boxes: cached.boxes }
-    for (const b of cached.boxes) pendingBoxIds.add(b.id)
-    savePending()
-    const maxBoxNum = cached.boxes.reduce((max, b) => Math.max(max, b.box_number || 0), 0)
-    state.next_box_number = maxBoxNum + 1
-    notify()
-  }
-
-  // Retry syncing any pending boxes
-  if (pendingBoxIds.size > 0 && isSupabaseConfigured()) {
-    retryPendingBoxes()
+  if (cached) {
+    // We already showed cached data (initialized: true).
+    // Now try Supabase in the background to merge any new data.
+    loadFromSupabase().then(() => {
+      // Seed defaults if needed (background, non-blocking)
+      if (!seeded && isSupabaseConfigured()) {
+        seedDefaults().then(() => { seeded = true }).catch(() => {})
+      }
+      // Retry syncing any pending boxes
+      if (pendingBoxIds.size > 0 && isSupabaseConfigured()) {
+        retryPendingBoxes()
+      }
+    })
+  } else {
+    // No cache — must wait for Supabase or fall back to local defaults
+    const loaded = await loadFromSupabase()
+    if (!loaded) loadFromLocal()
+    if (!seeded && isSupabaseConfigured()) {
+      seedDefaults().then(() => { seeded = true }).catch(() => {})
+    }
+    if (pendingBoxIds.size > 0 && isSupabaseConfigured()) {
+      retryPendingBoxes()
+    }
   }
 }
 
