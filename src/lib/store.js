@@ -59,53 +59,29 @@ function notify() {
 
 // ── Supabase helpers ──
 
-async function sb(fn) {
-  if (!isSupabaseConfigured()) return null
-  try { return await fn() } catch (e) { console.error('Supabase error:', e); return null }
-}
-
 async function seedDefaults() {
   if (!isSupabaseConfigured()) return
-  // Check if rooms exist
   const { data: existing } = await supabase.from('rooms').select('id').limit(1)
   if (existing && existing.length > 0) return
 
-  // Seed default rooms
   const rooms = DEFAULT_ROOMS.map((name, i) => ({
     name, sort_order: i, household_id: 'default',
   }))
   await supabase.from('rooms').insert(rooms)
 
-  // Seed default essentials
   const essentials = DEFAULT_ESSENTIALS.map((item, i) => ({
     item_name: item, is_packed: false, sort_order: i, household_id: 'default',
   }))
   await supabase.from('essentials').insert(essentials)
 }
 
-// Debounce realtime reloads to prevent flicker
-let reloadTimer = null
-// Suppress reloads triggered by our own writes
-let writingCount = 0
-
-function debouncedReload() {
-  if (writingCount > 0) return  // Skip — this event is from our own write
-  if (reloadTimer) clearTimeout(reloadTimer)
-  reloadTimer = setTimeout(() => { reloadTimer = null; loadFromSupabase() }, 300)
-}
-
-// Wrap Supabase writes to suppress self-triggered realtime reloads
+// Fire-and-forget write to Supabase — local state is always the truth
 async function sbWrite(fn) {
   if (!isSupabaseConfigured()) return null
-  writingCount++
   try {
-    const result = await fn()
-    // Wait for realtime event to pass before re-enabling reloads
-    setTimeout(() => { writingCount-- }, 1500)
-    return result
+    return await fn()
   } catch (e) {
-    writingCount--
-    console.error('Supabase error:', e)
+    console.error('Supabase write error:', e)
     return null
   }
 }
@@ -127,23 +103,30 @@ async function loadFromSupabase() {
       supabase.from('furniture').select('*').order('created_at'),
     ])
 
-    const rooms = roomsRes.data || []
+    // Check for errors on the boxes query specifically — this is critical
+    if (boxesRes.error) {
+      console.error('Supabase boxes query failed:', boxesRes.error)
+      state = { ...state, initialized: true, lastError: `DB read failed: ${boxesRes.error.message}` }
+      notify()
+      return true // Return true so we don't fall through to loadFromLocal
+    }
+
+    const rooms = roomsRes.data || state.rooms
     const boxes = boxesRes.data || []
-    const essentials = essRes.data || []
-    const room_tasks = tasksRes.data || []
-    const activity_log = actRes.data || []
+    const essentials = essRes.data || state.essentials
+    const room_tasks = tasksRes.data || state.room_tasks
+    const activity_log = actRes.data || state.activity_log
     const estimates = estRes.data || []
-    const landlord_questions = lqRes.data || []
-    const move_checklist = clRes.data || []
-    const furniture = furnRes.data || []
+    const landlord_questions = lqRes.data || state.landlord_questions
+    const move_checklist = clRes.data || state.move_checklist
+    const furniture = furnRes.data || state.furniture
 
     const room_estimates = {}
     estimates.forEach(e => { room_estimates[e.room_id] = e.estimated_boxes })
 
-    // Merge: keep ALL local boxes that aren't in Supabase yet (prevents data loss)
+    // SAFETY: keep ALL local boxes that aren't in Supabase
     const remoteBoxIds = new Set(boxes.map(b => b.id))
     const unsyncedBoxes = state.boxes.filter(b => !remoteBoxIds.has(b.id))
-    // Mark them as pending so they get retried
     for (const b of unsyncedBoxes) {
       pendingBoxIds.add(b.id)
     }
@@ -164,13 +147,13 @@ async function loadFromSupabase() {
       furniture,
       next_box_number: maxBoxNum + 1,
       initialized: true,
+      lastError: null,
     }
     notify()
     return true
   } catch (e) {
     console.error('Failed to load from Supabase:', e)
-    // Mark initialized even on failure so spinner stops
-    state = { ...state, initialized: true }
+    state = { ...state, initialized: true, lastError: `Load failed: ${e.message}` }
     notify()
     return false
   }
@@ -198,22 +181,71 @@ function loadFromLocal() {
 }
 
 // ── Initialize ──
+// Local state is the source of truth during the session.
+// Supabase is used for persistence on startup load and fire-and-forget writes.
+// NO realtime subscriptions — they caused data wipes when Supabase returned 0 boxes.
 
 async function init() {
   const loaded = await loadFromSupabase()
   if (!loaded && !cached) loadFromLocal()
+  // If loaded from Supabase but had no boxes and we had cached boxes,
+  // make sure we didn't lose them (safety net)
+  if (loaded && state.boxes.length === 0 && cached && cached.boxes && cached.boxes.length > 0) {
+    console.warn('Supabase returned 0 boxes but cache had', cached.boxes.length, '— restoring from cache')
+    state = { ...state, boxes: cached.boxes }
+    for (const b of cached.boxes) pendingBoxIds.add(b.id)
+    savePending()
+    const maxBoxNum = cached.boxes.reduce((max, b) => Math.max(max, b.box_number || 0), 0)
+    state.next_box_number = maxBoxNum + 1
+    notify()
+  }
 
-  // Set up realtime subscriptions (debounced to prevent flicker)
-  if (isSupabaseConfigured()) {
-    supabase.channel('changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'boxes' }, () => debouncedReload())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => debouncedReload())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'essentials' }, () => debouncedReload())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'room_tasks' }, () => debouncedReload())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'landlord_questions' }, () => debouncedReload())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'move_checklist' }, () => debouncedReload())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'furniture' }, () => debouncedReload())
-      .subscribe()
+  // Retry syncing any pending boxes
+  if (pendingBoxIds.size > 0 && isSupabaseConfigured()) {
+    retryPendingBoxes()
+  }
+}
+
+async function retryPendingBoxes() {
+  const pendingIds = [...pendingBoxIds]
+  for (const id of pendingIds) {
+    const box = state.boxes.find(b => b.id === id)
+    if (!box) { pendingBoxIds.delete(id); continue }
+    try {
+      // Check if it already exists in Supabase
+      const { data: existing } = await supabase.from('boxes').select('id').eq('id', id).limit(1)
+      if (existing && existing.length > 0) {
+        pendingBoxIds.delete(id)
+        savePending()
+        continue
+      }
+      // Try to insert
+      const insert = {
+        id: box.id, label: box.label, status: box.status,
+        is_fragile: box.is_fragile, is_priority: box.is_priority,
+        is_temporary_storage: box.is_temporary_storage || false,
+        handling_notes: box.handling_notes || '', ai_summary: box.ai_summary || '',
+        manual_contents: box.manual_contents || '', box_size: box.box_size || null,
+        household_id: box.household_id || 'default', box_number: box.box_number,
+      }
+      if (box.destination_room_id) {
+        const { data: roomCheck } = await supabase.from('rooms').select('id').eq('id', box.destination_room_id).limit(1)
+        if (roomCheck && roomCheck.length > 0) insert.destination_room_id = box.destination_room_id
+      }
+      const { error } = await supabase.from('boxes').insert(insert)
+      if (!error) {
+        pendingBoxIds.delete(id)
+        savePending()
+      } else {
+        console.error('Retry sync failed for box', id, ':', error.message)
+      }
+    } catch (e) {
+      console.error('Retry sync error for box', id, ':', e)
+    }
+  }
+  if (pendingBoxIds.size === 0) {
+    state = { ...state, lastError: null }
+    notify()
   }
 }
 
