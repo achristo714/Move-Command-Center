@@ -16,7 +16,7 @@ export default function AddBox() {
 
   const nextNumber = store.getState().next_box_number
 
-  const [boxNumber, setBoxNumber] = useState(nextNumber)
+  const [boxNumber, setBoxNumber] = useState(String(nextNumber))
   const [label, setLabel] = useState('')
   const [roomId, setRoomId] = useState('')
   const [isFragile, setIsFragile] = useState(false)
@@ -29,8 +29,9 @@ export default function AddBox() {
   const [analyzing, setAnalyzing] = useState(false)
   const [aiSummary, setAiSummary] = useState('')
 
+  const boxNum = parseInt(boxNumber) || nextNumber
   const selectedRoom = rooms.find(r => r.id === roomId)
-  const sharpieCode = generateBoxCode(boxNumber, selectedRoom?.name)
+  const sharpieCode = generateBoxCode(boxNum, selectedRoom?.name)
 
   const [suggestingLabel, setSuggestingLabel] = useState(false)
 
@@ -111,7 +112,7 @@ export default function AddBox() {
 
   const handleSave = () => {
     const box = store.addBox({
-      box_number_override: boxNumber !== nextNumber ? boxNumber : null,
+      box_number_override: boxNum !== nextNumber ? boxNum : null,
       label: label || sharpieCode,
       destination_room_id: roomId || null,
       is_fragile: isFragile,
@@ -132,7 +133,7 @@ export default function AddBox() {
         <button onClick={() => navigate(-1)} className="p-1">
           <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
         </button>
-        <h1 className="text-xl font-bold text-slate-800 dark:text-white">Add Box #{boxNumber}</h1>
+        <h1 className="text-xl font-bold text-slate-800 dark:text-white">Add Box #{boxNum}</h1>
       </div>
 
       {/* Sharpie Code */}
@@ -146,10 +147,11 @@ export default function AddBox() {
             {selectedRoom ? selectedRoom.name.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() : 'BOX'}-
           </span>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={boxNumber}
-            onChange={e => setBoxNumber(Math.max(1, parseInt(e.target.value) || 1))}
-            className="w-20 text-3xl font-mono font-bold bg-transparent border-b-2 border-blue-300 dark:border-blue-500/50 text-blue-700 dark:text-blue-400 tracking-wider outline-none focus:border-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            onChange={e => setBoxNumber(e.target.value.replace(/[^0-9]/g, ''))}
+            className="w-20 text-3xl font-mono font-bold bg-transparent border-b-2 border-blue-300 dark:border-blue-500/50 text-blue-700 dark:text-blue-400 tracking-wider outline-none focus:border-blue-500"
           />
         </div>
         <p className="text-xs text-slate-400 mt-1">

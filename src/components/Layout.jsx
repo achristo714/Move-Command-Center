@@ -127,12 +127,18 @@ export default function Layout() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
           >
+            {!appState.initialized && (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-800 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin" />
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Loading your move...</p>
+              </div>
+            )}
             {appState.lastError && (
               <div className="mb-3 bg-red-500/10 border border-red-400/30 rounded-xl px-4 py-2 text-sm text-red-500 dark:text-red-400">
                 {appState.lastError}
               </div>
             )}
-            <Outlet />
+            {appState.initialized && <Outlet />}
           </motion.div>
         </AnimatePresence>
       </main>

@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { ArrowLeft, Plus, Trash2, Download, RotateCcw, MapPin, Calculator, Moon, Sun, Pencil, Check, X } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Download, RotateCcw, MapPin, Calculator, Moon, Sun, Pencil, Check, X, Bug } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useRooms } from '../hooks/useStore'
+import { useRooms, useStore } from '../hooks/useStore'
 import { useTheme } from '../hooks/useTheme'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import store from '../lib/store'
 
 export default function Settings() {
@@ -12,6 +13,7 @@ export default function Settings() {
   const [newRoom, setNewRoom] = useState('')
   const [editingRoom, setEditingRoom] = useState(null)
   const [editName, setEditName] = useState('')
+  const [debugStatus, setDebugStatus] = useState('')
 
   const handleAddRoom = (e) => { e.preventDefault(); if (!newRoom.trim()) return; addRoom(newRoom.trim()); setNewRoom('') }
 
@@ -115,6 +117,43 @@ export default function Settings() {
         {[{ to: '/labels', label: 'Print QR Labels' }, { to: '/print/movers', label: 'Mover Instructions' }, { to: '/essentials', label: 'Essentials Checklist' }, { to: '/unpack', label: 'Unpacking Queue' }].map(l => (
           <button key={l.to} onClick={() => navigate(l.to)} className="w-full text-left text-sm text-blue-500 py-1">{l.label} →</button>
         ))}
+      </div>
+
+      {/* Debug / Test */}
+      <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-orange-200 dark:border-orange-500/20 p-4 space-y-3">
+        <h2 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2"><Bug className="w-4 h-4 text-orange-500" />Debug</h2>
+        <div className="text-xs text-slate-400 space-y-1">
+          <p>Supabase: {isSupabaseConfigured() ? '✅ Connected' : '❌ Not configured'}</p>
+          <p>Boxes in state: {store.getState().boxes.length}</p>
+          <p>Pending sync: {JSON.parse(localStorage.getItem('move-pending-box-ids') || '[]').length} boxes</p>
+          <p>Last error: {store.getState().lastError || 'none'}</p>
+        </div>
+        <button
+          onClick={async () => {
+            setDebugStatus('Adding test box...')
+            const box = store.addBox({ label: 'DEBUG TEST BOX', handling_notes: 'Auto-generated test' })
+            setDebugStatus(`Local: Box #${box.box_number} created (id: ${box.id.slice(0,8)})`)
+            // Wait a moment for the async Supabase write
+            await new Promise(r => setTimeout(r, 3000))
+            // Check if it made it to Supabase
+            if (isSupabaseConfigured() && supabase) {
+              const { data, error } = await supabase.from('boxes').select('id,box_number').eq('id', box.id).single()
+              if (error) {
+                setDebugStatus(`❌ SUPABASE FAILED: ${error.message} (code: ${error.code})`)
+              } else if (data) {
+                setDebugStatus(`✅ SUCCESS: Box in Supabase as #${data.box_number}`)
+              } else {
+                setDebugStatus('❌ Box not found in Supabase after insert')
+              }
+            } else {
+              setDebugStatus('⚠️ Supabase not configured — saved to localStorage only')
+            }
+          }}
+          className="w-full bg-orange-500 text-white rounded-lg px-4 py-2 text-sm font-medium"
+        >
+          Add Debug Test Box
+        </button>
+        {debugStatus && <p className="text-xs font-mono text-orange-600 dark:text-orange-400 break-all">{debugStatus}</p>}
       </div>
 
       {/* Export / Reset */}
