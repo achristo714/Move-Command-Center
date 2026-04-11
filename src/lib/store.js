@@ -107,12 +107,21 @@ async function loadFromSupabase() {
 
     // SAFETY: keep ALL local boxes that aren't in Supabase
     const remoteBoxIds = new Set(boxes.map(b => b.id))
+    const localBoxMap = new Map(state.boxes.map(b => [b.id, b]))
     const unsyncedBoxes = state.boxes.filter(b => !remoteBoxIds.has(b.id))
     for (const b of unsyncedBoxes) {
       pendingBoxIds.add(b.id)
     }
     if (unsyncedBoxes.length > 0) savePending()
-    const mergedBoxes = [...boxes, ...unsyncedBoxes]
+    // Merge remote boxes with local photo_urls (not fetched in bulk query)
+    const mergedRemote = boxes.map(b => {
+      const local = localBoxMap.get(b.id)
+      if (local && local.photo_urls && local.photo_urls.length > 0) {
+        return { ...b, photo_urls: local.photo_urls }
+      }
+      return b
+    })
+    const mergedBoxes = [...mergedRemote, ...unsyncedBoxes]
 
     const maxBoxNum = mergedBoxes.reduce((max, b) => Math.max(max, b.box_number || 0), 0)
 
