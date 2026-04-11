@@ -14,6 +14,8 @@ export default function Settings() {
   const [editingRoom, setEditingRoom] = useState(null)
   const [editName, setEditName] = useState('')
   const [debugStatus, setDebugStatus] = useState('')
+  const [migrateStatus, setMigrateStatus] = useState('')
+  const [migrating, setMigrating] = useState(false)
 
   const handleAddRoom = (e) => { e.preventDefault(); if (!newRoom.trim()) return; addRoom(newRoom.trim()); setNewRoom('') }
 
@@ -154,6 +156,59 @@ export default function Settings() {
           Add Debug Test Box
         </button>
         {debugStatus && <p className="text-xs font-mono text-orange-600 dark:text-orange-400 break-all">{debugStatus}</p>}
+        <hr className="border-orange-200 dark:border-orange-500/20" />
+        <button
+          disabled={migrating}
+          onClick={async () => {
+            if (!isSupabaseConfigured() || !supabase) { setMigrateStatus('Supabase not configured'); return }
+            setMigrating(true)
+            setMigrateStatus('Fetching boxes with photos from DB...')
+            try {
+              // Fetch ALL boxes that have photo_urls with base64 data
+              const { data: allBoxes, error } = await supabase.from('boxes').select('id,box_number,photo_urls')
+              if (error) { setMigrateStatus(`Failed to fetch: ${error.message}`); setMigrating(false); return }
+              const boxesWithPhotos = (allBoxes || []).filter(b => b.photo_urls && b.photo_urls.length > 0 && b.photo_urls.some(u => u && u.startsWith('data:')))
+              if (boxesWithPhotos.length === 0) { setMigrateStatus('No base64 photos found in DB to migrate.'); setMigrating(false); return }
+              setMigrateStatus(`Found ${boxesWithPhotos.length} boxes with base64 photos. Migrating...`)
+              let migrated = 0
+              let failed = 0
+              for (const box of boxesWithPhotos) {
+                const newUrls = []
+                for (let i = 0; i < box.photo_urls.length; i++) {
+                  const url = box.photo_urls[i]
+                  if (!url || !url.startsWith('data:')) { newUrls.push(url); continue }
+                  try {
+                    // Convert base64 data URL to blob
+                    const res = await fetch(url)
+                    const blob = await res.blob()
+                    const ext = blob.type === 'image/png' ? 'png' : 'jpg'
+                    const path = `boxes/${box.id}/${crypto.randomUUID()}.${ext}`
+                    const { error: upErr } = await supabase.storage.from('box-photos').upload(path, blob, {
+                      cacheControl: '31536000',
+                      contentType: blob.type,
+                    })
+                    if (upErr) { console.error('Upload failed:', upErr); newUrls.push(url); failed++; continue }
+                    const { data: urlData } = supabase.storage.from('box-photos').getPublicUrl(path)
+                    newUrls.push(urlData?.publicUrl || url)
+                    migrated++
+                  } catch (e) { console.error('Migration error:', e); newUrls.push(url); failed++ }
+                }
+                // Update the box with new URLs
+                const { error: updErr } = await supabase.from('boxes').update({ photo_urls: newUrls }).eq('id', box.id)
+                if (updErr) console.error('Failed to update box', box.id, updErr)
+                setMigrateStatus(`Migrating... Box #${box.box_number} done (${migrated} photos uploaded, ${failed} failed)`)
+              }
+              // Reload local state
+              store.updateBox(boxesWithPhotos[0].id, {})  // trigger a notify
+              setMigrateStatus(`Done! ${migrated} photos moved to Storage, ${failed} failed.`)
+            } catch (e) { setMigrateStatus(`Error: ${e.message}`) }
+            setMigrating(false)
+          }}
+          className="w-full bg-blue-500 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
+        >
+          {migrating ? 'Migrating...' : 'Migrate Photos to Storage'}
+        </button>
+        {migrateStatus && <p className="text-xs font-mono text-blue-600 dark:text-blue-400 break-all">{migrateStatus}</p>}
       </div>
 
       {/* Export / Reset */}
