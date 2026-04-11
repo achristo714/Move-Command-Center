@@ -330,7 +330,8 @@ export const store = {
     if (box.photo_urls && box.photo_urls.length > 0) return
     if (!isSupabaseConfigured()) return
     try {
-      const { data } = await supabase.from('boxes').select('photo_urls').eq('id', id).single()
+      const { data, error } = await supabase.from('boxes').select('photo_urls').eq('id', id).single()
+      if (error) { console.error('loadBoxPhotos error:', error); return }
       if (data && data.photo_urls && data.photo_urls.length > 0) {
         state = {
           ...state,
@@ -338,7 +339,23 @@ export const store = {
         }
         notify()
       }
-    } catch {}
+    } catch (e) { console.error('loadBoxPhotos exception:', e) }
+  },
+
+  // Upload photo to Supabase Storage, returns public URL
+  async uploadPhoto(boxId, file) {
+    if (!isSupabaseConfigured()) return null
+    try {
+      const ext = file.name?.split('.').pop() || 'jpg'
+      const path = `boxes/${boxId}/${createId()}.${ext}`
+      const { error } = await supabase.storage.from('box-photos').upload(path, file, {
+        cacheControl: '31536000',
+        contentType: file.type || 'image/jpeg',
+      })
+      if (error) { console.error('Photo upload error:', error); return null }
+      const { data: urlData } = supabase.storage.from('box-photos').getPublicUrl(path)
+      return urlData?.publicUrl || null
+    } catch (e) { console.error('Photo upload exception:', e); return null }
   },
 
   addBox(data) {
@@ -392,10 +409,9 @@ export const store = {
         const { data: roomCheck } = await supabase.from('rooms').select('id').eq('id', box.destination_room_id).limit(1)
         if (roomCheck && roomCheck.length > 0) insert.destination_room_id = box.destination_room_id
       }
-      // Skip photo_urls if they're large base64 (can exceed payload limit)
+      // Include photo_urls (now Storage URLs, not base64)
       if (box.photo_urls && box.photo_urls.length > 0) {
-        const totalSize = JSON.stringify(box.photo_urls).length
-        if (totalSize < 500000) insert.photo_urls = box.photo_urls
+        insert.photo_urls = box.photo_urls
       }
       if (customNum) insert.box_number = boxNum
 

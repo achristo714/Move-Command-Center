@@ -56,13 +56,19 @@ export default function BoxDetail() {
   const handleAdvance = (status) => { store.updateBox(box.id, { status }) }
 
   const handleAddPhotos = async (files) => {
+    const fileArr = Array.from(files)
     const newUrls = await Promise.all(
-      Array.from(files).map(f => new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = reject
-        reader.readAsDataURL(f)
-      }))
+      fileArr.map(async (f) => {
+        const url = await store.uploadPhoto(box.id, f)
+        if (url) return url
+        // Fall back to data URL if storage upload fails
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result)
+          reader.onerror = reject
+          reader.readAsDataURL(f)
+        })
+      })
     )
     store.updateBox(box.id, { photo_urls: [...(box.photo_urls || []), ...newUrls] })
   }

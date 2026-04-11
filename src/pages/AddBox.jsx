@@ -110,7 +110,21 @@ export default function AddBox() {
     })
   }
 
-  const handleSave = () => {
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    setSaving(true)
+    // Upload photos to Supabase Storage, fall back to data URL if upload fails
+    const tempId = crypto.randomUUID()
+    const photoUrls = await Promise.all(
+      photos.map(async (p) => {
+        if (p.file) {
+          const url = await store.uploadPhoto(tempId, p.file)
+          return url || p.preview // fall back to base64 if upload fails
+        }
+        return p.preview
+      })
+    )
     const box = store.addBox({
       box_number_override: boxNum !== nextNumber ? boxNum : null,
       label: label || sharpieCode,
@@ -122,7 +136,7 @@ export default function AddBox() {
       manual_contents: manualContents,
       ai_summary: aiSummary,
       box_size: boxSize || null,
-      photo_urls: photos.map(p => p.preview),
+      photo_urls: photoUrls,
     })
     navigate(`/boxes/${box.id}`)
   }
@@ -264,8 +278,8 @@ export default function AddBox() {
         <textarea value={manualContents} onChange={e => setManualContents(e.target.value)} placeholder="List what's in this box..." rows={3} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 dark:text-white resize-none" />
       </div>
 
-      <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} className="w-full bg-blue-500 text-white rounded-xl py-3 font-semibold text-base shadow-lg shadow-blue-500/30">
-        Save Box #{nextNumber}
+      <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} disabled={saving} className="w-full bg-blue-500 text-white rounded-xl py-3 font-semibold text-base shadow-lg shadow-blue-500/30 disabled:opacity-60">
+        {saving ? 'Saving...' : `Save Box #${boxNum}`}
       </motion.button>
     </div>
   )
