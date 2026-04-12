@@ -52,6 +52,15 @@ function savePending() {
   localStorage.setItem(PENDING_KEY, JSON.stringify([...pendingBoxIds]))
 }
 
+// Tombstones — boxes the user deleted locally. We keep these around so that
+// if the Supabase delete fails (e.g. FK constraint, network), the box doesn't
+// reappear on reload. Cleared on successful delete.
+const DELETED_KEY = 'move-deleted-box-ids'
+let deletedBoxIds = new Set(JSON.parse(localStorage.getItem(DELETED_KEY) || '[]'))
+function saveDeleted() {
+  localStorage.setItem(DELETED_KEY, JSON.stringify([...deletedBoxIds]))
+}
+
 function notify() {
   saveLocal(state)
   listeners.forEach(fn => fn(state))
@@ -103,7 +112,8 @@ async function loadFromSupabase() {
     }
 
     const rooms = roomsRes.data || state.rooms
-    const boxes = boxesRes.data || []
+    // Filter out tombstoned boxes — user deleted them locally, don't resurrect
+    const boxes = (boxesRes.data || []).filter(b => !deletedBoxIds.has(b.id))
 
     // SAFETY: keep ALL local boxes that aren't in Supabase
     const remoteBoxIds = new Set(boxes.map(b => b.id))
@@ -282,6 +292,9 @@ async function init() {
       if (pendingBoxIds.size > 0 && isSupabaseConfigured()) {
         retryPendingBoxes()
       }
+      if (deletedBoxIds.size > 0 && isSupabaseConfigured()) {
+        retryDeletedBoxes()
+      }
     })
   } else {
     // No cache — must wait for Supabase or fall back to local defaults
@@ -293,6 +306,27 @@ async function init() {
     if (pendingBoxIds.size > 0 && isSupabaseConfigured()) {
       retryPendingBoxes()
     }
+  }
+}
+
+async function retryDeletedBoxes() {
+  if (!isSupabaseConfigured()) return
+  await new Promise(r => setTimeout(r, 5000))
+  const ids = [...deletedBoxIds]
+  for (const id of ids) {
+    try {
+      await supabase.from('activity_log').delete().eq('box_id', id).catch(() => {})
+      const { error } = await supabase.from('boxes').delete().eq('id', id)
+      if (!error) {
+        deletedBoxIds.delete(id)
+        saveDeleted()
+      } else {
+        console.error('Retry delete failed for box', id, ':', error.message)
+      }
+    } catch (e) {
+      console.error('Retry delete error for box', id, ':', e)
+    }
+    await new Promise(r => setTimeout(r, 500))
   }
 }
 
@@ -530,9 +564,33 @@ export const store = {
   },
 
   deleteBox(id) {
+    // If the box was never synced to Supabase, just drop it locally — nothing to delete remotely
+    const wasPending = pendingBoxIds.has(id)
+    pendingBoxIds.delete(id)
+    savePending()
+
     state = { ...state, boxes: state.boxes.filter(b => b.id !== id) }
     notify()
-    sbWrite(() => supabase.from('boxes').delete().eq('id', id))
+
+    if (wasPending || !isSupabaseConfigured()) return
+
+    // Tombstone so if delete fails (FK, network), the box doesn't come back on reload
+    deletedBoxIds.add(id)
+    saveDeleted()
+
+    sbWrite(async () => {
+      // activity_log.box_id FK will block delete if we don't clear refs first
+      await supabase.from('activity_log').delete().eq('box_id', id).catch(() => {})
+      const { error } = await supabase.from('boxes').delete().eq('id', id)
+      if (error) {
+        console.error('Box delete failed:', error.message, error.code, error.details)
+        state = { ...state, lastError: `Delete sync failed: ${error.message}` }
+        notify()
+        return  // Tombstone stays — we'll retry on next startup
+      }
+      deletedBoxIds.delete(id)
+      saveDeleted()
+    })
   },
 
   advanceStatus(id) {
@@ -794,6 +852,8 @@ export const store = {
 
   // Reset
   reset() {
+    pendingBoxIds.clear(); savePending()
+    deletedBoxIds.clear(); saveDeleted()
     state = { ...emptyState, initialized: true }
     notify()
     if (isSupabaseConfigured()) {
