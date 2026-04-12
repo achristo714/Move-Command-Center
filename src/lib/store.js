@@ -138,6 +138,11 @@ async function loadFromSupabase() {
     // Load non-critical data in background (won't block UI)
     loadSecondaryData()
 
+    // Background: load photos for all boxes sequentially so thumbnails appear
+    // on the list view without blocking the UI. Uses small delays to avoid
+    // hammering the DB.
+    loadAllBoxPhotos()
+
     return true
   } catch (e) {
     console.error('Failed to load from Supabase:', e)
@@ -186,6 +191,55 @@ async function loadSecondaryData() {
     if (furniture) { state = { ...state, furniture }; notify() }
   } catch (e) {
     console.error('Secondary data load failed (non-critical):', e)
+  }
+}
+
+// Background: sequentially fetch photo_urls for every box that doesn't already
+// have them loaded locally. This populates thumbnails on the list view within
+// a few seconds of opening the app, without blocking initial render.
+let photosLoading = false
+async function loadAllBoxPhotos() {
+  if (photosLoading) return
+  if (!isSupabaseConfigured()) return
+  photosLoading = true
+  try {
+    // Snapshot the ids of boxes that still need photos. New boxes added during
+    // the loop already have their photos in local state, so they're skipped.
+    const idsToLoad = state.boxes
+      .filter(b => !b.photo_urls || b.photo_urls.length === 0)
+      .map(b => b.id)
+
+    for (const id of idsToLoad) {
+      // Re-check — the box may have been deleted or had photos loaded by nav
+      const current = state.boxes.find(b => b.id === id)
+      if (!current) continue
+      if (current.photo_urls && current.photo_urls.length > 0) continue
+
+      try {
+        const { data, error } = await supabase
+          .from('boxes')
+          .select('photo_urls')
+          .eq('id', id)
+          .single()
+        if (error) {
+          console.error('loadAllBoxPhotos error for', id, error.message)
+        } else if (data && data.photo_urls && data.photo_urls.length > 0) {
+          state = {
+            ...state,
+            boxes: state.boxes.map(b =>
+              b.id === id ? { ...b, photo_urls: data.photo_urls } : b
+            ),
+          }
+          notify()
+        }
+      } catch (e) {
+        console.error('loadAllBoxPhotos exception for', id, e)
+      }
+      // Small delay between fetches so we don't hammer the DB
+      await new Promise(r => setTimeout(r, 150))
+    }
+  } finally {
+    photosLoading = false
   }
 }
 
